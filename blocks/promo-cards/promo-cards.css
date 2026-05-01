@@ -1,0 +1,78 @@
+.promo-cards > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.promo-cards > ul > li {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 280px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.promo-cards .promo-cards-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.promo-cards .promo-cards-image picture,
+.promo-cards .promo-cards-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.promo-cards .promo-cards-body {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+  color: #fff;
+  width: 100%;
+  background: linear-gradient(to top, rgb(0 0 0 / 70%) 0%, transparent 100%);
+}
+
+.promo-cards .promo-cards-body h3 {
+  font-size: var(--heading-font-size-m);
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #fff;
+  font-family: var(--heading-font-family);
+}
+
+.promo-cards .promo-cards-body p {
+  font-size: var(--body-font-size-xs);
+  margin: 0 0 12px;
+  color: rgb(255 255 255 / 85%);
+  line-height: 1.4;
+}
+
+.promo-cards .promo-cards-body a:any-link {
+  color: #fff;
+  font-weight: 500;
+  font-size: var(--body-font-size-xs);
+  text-decoration: none;
+}
+
+.promo-cards .promo-cards-body a:hover {
+  text-decoration: underline;
+}
+
+@media (width >= 600px) {
+  .promo-cards > ul {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@media (width >= 900px) {
+  .promo-cards > ul > li {
+    min-height: 360px;
+  }
+}

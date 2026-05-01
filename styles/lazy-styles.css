@@ -1,1 +1,19 @@
-/* add global styles that can be loaded post LCP here */
+/* Section heading with side link */
+main .section > .default-content-wrapper > h2 {
+  margin-bottom: 4px;
+}
+
+main .section > .default-content-wrapper > p {
+  margin-top: 0;
+}
+
+/* Centered section text */
+main .section > .default-content-wrapper > h2[style*="text-align: center"],
+main .section > .default-content-wrapper > p[style*="text-align: center"] {
+  text-align: center;
+}
+
+main .section > .default-content-wrapper > p[style*="text-align: center"] {
+  color: var(--dark-color);
+  margin-bottom: 32px;
+}
