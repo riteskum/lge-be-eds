@@ -14,7 +14,9 @@
  * Or:
  *   node scripts/fetch-figma-pdp.mjs figd_YOUR_TOKEN
  *
- * On 429: wait 15–60 minutes and retry (Figma rate limits per token).
+ * On 429: Figma may send a Retry-After header (seconds). Heavy use from
+ * shared/cloud IPs can trigger long backoffs — run this script on your
+ * own machine if requests fail here.
  */
 
 import fs from 'node:fs';
@@ -38,7 +40,7 @@ function loadDotEnv() {
     if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     }
-    if (key === 'FIGMA_TOKEN' && val && !process.env.FIGMA_TOKEN) {
+    if (key === 'FIGMA_TOKEN' && val) {
       process.env.FIGMA_TOKEN = val;
     }
   }
@@ -80,7 +82,16 @@ const res = await fetch(url, { headers: { 'X-Figma-Token': token } });
 const data = await res.json();
 
 if (!res.ok || data.err) {
-  console.error('Figma API error:', data.status || res.status, data.err || data);
+  const retryAfter = res.headers.get('retry-after');
+  console.error('Figma API error:', data.status || res.status, data.err || data.message || '');
+  if (retryAfter) {
+    const sec = Number(retryAfter);
+    const human = Number.isFinite(sec)
+      ? ` (~${Math.ceil(sec / 3600)} h)`
+      : '';
+    console.error(`Retry-After: ${retryAfter}s${human}`);
+    console.error('Tip: run `node scripts/fetch-figma-pdp.mjs` on your local PC — file API limits are often IP-based.');
+  }
   process.exit(1);
 }
 
