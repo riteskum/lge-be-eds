@@ -194,7 +194,7 @@
   }
 }
 
-/* Banner variant — contained hero for category/home pages */
+/* Banner variant — contained hero with full background image + overlay text */
 .hero-container:has(.hero.banner) .hero-wrapper {
   max-width: 1200px;
   padding: 0 24px;
@@ -202,79 +202,45 @@
 }
 
 .hero.banner {
-  min-height: auto;
-  background: var(--light-color);
+  min-height: 360px;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .hero.banner .hero-track {
-  min-height: auto;
-}
-
-.hero.banner .hero-slide {
-  display: flex;
-  flex-direction: column;
-}
-
-.hero.banner .hero-slide.active {
-  position: relative;
+  min-height: inherit;
 }
 
 .hero.banner .hero-bg {
-  position: relative;
-  inset: auto;
-  order: 1;
+  position: absolute;
+  inset: 0;
 }
 
 .hero.banner .hero-bg img {
   width: 100%;
-  height: auto;
-  max-height: 300px;
-  object-fit: contain;
-  object-position: center;
-  padding: 20px;
+  height: 100%;
+  object-fit: cover;
 }
 
 .hero.banner .hero-content {
   padding: 32px 24px;
-  order: 2;
-}
-
-.hero.banner h1,
-.hero.banner h2 {
-  font-size: 32px;
-  max-width: none;
-}
-
-.hero.banner .hero-description {
-  max-width: none;
-  font-size: var(--body-font-size-xs);
 }
 
 .hero.banner .hero-arrow {
-  background: rgb(0 0 0 / 5%);
-  color: var(--text-color);
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-color);
+  background: rgb(255 255 255 / 60%);
+  border: 1px solid rgb(255 255 255 / 30%);
 }
 
 .hero.banner .hero-arrow:hover {
-  background: rgb(0 0 0 / 10%);
+  background: rgb(255 255 255 / 85%);
 }
 
 .hero.banner .hero-dots {
-  position: relative;
-  bottom: auto;
-  left: auto;
-  transform: none;
-  justify-content: center;
-  padding: 16px 0 24px;
+  bottom: 20px;
 }
 
 .hero.banner .hero-dot {
-  background: var(--border-color);
+  background: rgb(255 255 255 / 40%);
 }
 
 .hero.banner .hero-dot.active {
@@ -287,44 +253,18 @@
   }
 
   .hero.banner {
-    min-height: auto;
-  }
-
-  .hero.banner .hero-slide {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .hero.banner .hero-bg {
-    width: 50%;
-    flex-shrink: 0;
-    order: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .hero.banner .hero-bg img {
-    max-height: 400px;
-    padding: 32px;
+    min-height: 480px;
   }
 
   .hero.banner .hero-content {
-    width: 50%;
     padding: 48px 40px;
-    order: 1;
-  }
-
-  .hero.banner h1,
-  .hero.banner h2 {
-    font-size: 48px;
   }
 
   .hero.banner .hero-prev {
-    left: 12px;
+    left: 16px;
   }
 
   .hero.banner .hero-next {
-    right: 12px;
+    right: 16px;
   }
 }
