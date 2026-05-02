@@ -20,30 +20,35 @@ main .section > .default-content-wrapper > p[style*="text-align: center"] {
 
 /* Product listing two-column layout */
 main .section.product-listing {
-  display: block;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+main .section.product-listing > div {
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 @media (width >= 900px) {
-  main .section.product-listing > .section-container,
   main .section.product-listing {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 32px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0 32px;
+    padding: 0 32px;
   }
 
   main .section.product-listing > .product-sidebar-wrapper {
-    width: 220px;
-    flex-shrink: 0;
-  }
-
-  main .section.product-listing > .results-bar-wrapper,
-  main .section.product-listing > .product-cards-wrapper {
-    flex: 1;
-    min-width: 0;
+    grid-column: 1;
+    grid-row: 1 / 20;
   }
 
   main .section.product-listing > .results-bar-wrapper {
-    flex-basis: calc(100% - 252px);
+    grid-column: 2;
+  }
+
+  main .section.product-listing > .product-cards-wrapper {
+    grid-column: 2;
   }
 }
