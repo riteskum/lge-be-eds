@@ -109,7 +109,7 @@ const indexHtml = `<body>
   <header></header>
   <main>
     <div>
-      <div class="hero">
+      <div class="hero banner">
         <div>
           <div>
             <picture>

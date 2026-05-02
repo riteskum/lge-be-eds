@@ -194,7 +194,7 @@
   }
 }
 
-/* Banner variant — contained hero for category pages */
+/* Banner variant — contained hero for category/home pages */
 .hero-container:has(.hero.banner) .hero-wrapper {
   max-width: 1200px;
   padding: 0 24px;
@@ -206,6 +206,10 @@
   background: var(--light-color);
   border-radius: 12px;
   overflow: hidden;
+}
+
+.hero.banner .hero-track {
+  min-height: auto;
 }
 
 .hero.banner .hero-slide {
@@ -248,9 +252,33 @@
   font-size: var(--body-font-size-xs);
 }
 
-.hero.banner .hero-arrows,
+.hero.banner .hero-arrow {
+  background: rgb(0 0 0 / 5%);
+  color: var(--text-color);
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+}
+
+.hero.banner .hero-arrow:hover {
+  background: rgb(0 0 0 / 10%);
+}
+
 .hero.banner .hero-dots {
-  display: none;
+  position: relative;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  justify-content: center;
+  padding: 16px 0 24px;
+}
+
+.hero.banner .hero-dot {
+  background: var(--border-color);
+}
+
+.hero.banner .hero-dot.active {
+  background: var(--accent-color);
 }
 
 @media (width >= 900px) {
@@ -277,7 +305,7 @@
   }
 
   .hero.banner .hero-bg img {
-    max-height: 340px;
+    max-height: 400px;
     padding: 32px;
   }
 
@@ -289,6 +317,14 @@
 
   .hero.banner h1,
   .hero.banner h2 {
-    font-size: 42px;
+    font-size: 48px;
+  }
+
+  .hero.banner .hero-prev {
+    left: 12px;
+  }
+
+  .hero.banner .hero-next {
+    right: 12px;
   }
 }
