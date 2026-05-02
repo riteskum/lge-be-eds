@@ -100,9 +100,10 @@ const footerHtml = `<body>
 </body>`;
 
 /* ---------- INDEX (homepage) content ---------- */
+/* Maps to Document Authoring blob names (content.da.live uses media-<sanitized>.<ext>) */
 function imgRef(filename) {
   const base = filename.replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/gi, '');
-  return `./media_${base}.${filename.split('.').pop()}`;
+  return `./media-${base}.${filename.split('.').pop()}`;
 }
 
 const indexHtml = `<body>
@@ -616,7 +617,7 @@ async function pushHtml(page) {
 function toMediaName(filename) {
   const ext = nodePath.extname(filename).slice(1);
   const base = filename.replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/gi, '');
-  return `media_${base}.${ext}`;
+  return `media-${base}.${ext}`;
 }
 
 async function pushImage(filename) {
@@ -654,7 +655,7 @@ async function pushImage(filename) {
 (async () => {
   console.log(`\nPushing content to DA (${ORG}/${REPO}) …\n`);
 
-  console.log('Uploading images as media_ blobs …');
+  console.log('Uploading images as media- blobs …');
   await imageFiles.reduce(
     (chain, img) => chain.then(() => pushImage(img)),
     Promise.resolve(),
