@@ -339,7 +339,7 @@ const televisionsHtml = `<body>
         <div>
           <div>
             <p><strong>NOUVEAU</strong></p>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo G3 65 pouces"></picture>
+            <picture><img src="/images/product-oled-c3.jpg" alt="LG OLED evo G3 65 pouces"></picture>
           </div>
           <div>
             <h3>LG OLED evo G3 65'' 4K Smart TV 2024</h3>
@@ -350,7 +350,7 @@ const televisionsHtml = `<body>
         </div>
         <div>
           <div>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo C3 55 pouces"></picture>
+            <picture><img src="/images/pdp-g4-97-lifestyle.jpg" alt="LG OLED evo C3 55 pouces"></picture>
           </div>
           <div>
             <h3>LG OLED evo C3 55'' 4K Smart TV</h3>
@@ -362,7 +362,7 @@ const televisionsHtml = `<body>
         <div>
           <div>
             <p><strong>WIRELESS</strong></p>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo M3 77 pouces"></picture>
+            <picture><img src="/images/pdp-g4-97-main.jpg" alt="LG OLED evo M3 77 pouces"></picture>
           </div>
           <div>
             <h3>LG OLED evo M3 77'' Wireless OLED TV</h3>
@@ -374,7 +374,7 @@ const televisionsHtml = `<body>
         <div>
           <div>
             <p><strong>NOUVEAU</strong></p>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo C4 65 pouces"></picture>
+            <picture><img src="/images/pdp-g4-97-rear.jpg" alt="LG OLED evo C4 65 pouces"></picture>
           </div>
           <div>
             <h3>LG OLED evo C4 65'' 4K Smart TV 2024</h3>
@@ -385,7 +385,7 @@ const televisionsHtml = `<body>
         </div>
         <div>
           <div>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED B3 55 pouces"></picture>
+            <picture><img src="/images/pdp-g4-97-side.jpg" alt="LG OLED B3 55 pouces"></picture>
           </div>
           <div>
             <h3>LG OLED B3 55'' 4K Smart TV</h3>
@@ -397,7 +397,7 @@ const televisionsHtml = `<body>
         <div>
           <div>
             <p><strong>NOUVEAU</strong></p>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo G4 77 pouces"></picture>
+            <picture><img src="/images/pdp-g4-97-wall.jpg" alt="LG OLED evo G4 77 pouces"></picture>
           </div>
           <div>
             <h3>LG OLED evo G4 77'' 4K Smart TV 2024</h3>

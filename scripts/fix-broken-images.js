@@ -4,6 +4,13 @@
  */
 
 const ALT_TO_IMAGE_PATH = {
+  /* PLP — Téléviseurs (distinct asset per row; matches push televisions.html) */
+  'LG OLED evo G3 65 pouces': '/images/product-oled-c3.jpg',
+  'LG OLED evo C3 55 pouces': '/images/pdp-g4-97-lifestyle.jpg',
+  'LG OLED evo M3 77 pouces': '/images/pdp-g4-97-main.jpg',
+  'LG OLED evo C4 65 pouces': '/images/pdp-g4-97-rear.jpg',
+  'LG OLED B3 55 pouces': '/images/pdp-g4-97-side.jpg',
+  'LG OLED evo G4 77 pouces': '/images/pdp-g4-97-wall.jpg',
   'LG OLED evo G4 97 pouces — vue principale': '/images/pdp-g4-97-main.jpg',
   'Vue de profil': '/images/pdp-g4-97-side.jpg',
   'Fixation murale': '/images/pdp-g4-97-wall.jpg',
