@@ -17,3 +17,33 @@ main .section > .default-content-wrapper > p[style*="text-align: center"] {
   color: var(--dark-color);
   margin-bottom: 32px;
 }
+
+/* Product listing two-column layout */
+main .section.product-listing {
+  display: block;
+}
+
+@media (width >= 900px) {
+  main .section.product-listing > .section-container,
+  main .section.product-listing {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  main .section.product-listing > .product-sidebar-wrapper {
+    width: 220px;
+    flex-shrink: 0;
+  }
+
+  main .section.product-listing > .results-bar-wrapper,
+  main .section.product-listing > .product-cards-wrapper {
+    flex: 1;
+    min-width: 0;
+  }
+
+  main .section.product-listing > .results-bar-wrapper {
+    flex-basis: calc(100% - 252px);
+  }
+}
