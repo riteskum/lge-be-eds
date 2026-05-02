@@ -35,7 +35,8 @@
   border-bottom: none;
 }
 
-@media (width >= 600px) {
+/* Two-column spec rows (tablet) */
+@media (600px <= width <= 899.98px) {
   .product-specs .product-specs-list {
     grid-template-columns: minmax(140px, 220px) 1fr;
   }
@@ -52,5 +53,25 @@
   .product-specs .product-specs-list dt:nth-last-child(2),
   .product-specs .product-specs-list dd:last-child {
     border-bottom: none;
+  }
+}
+
+/* Figma-style: two spec pairs per row (desktop) */
+@media (width >= 900px) {
+  .product-specs .product-specs-list {
+    grid-template-columns: minmax(120px, 200px) 1fr minmax(120px, 200px) 1fr;
+    gap: 1px;
+    border: none;
+    background: var(--border-color);
+  }
+
+  .product-specs .product-specs-list dt,
+  .product-specs .product-specs-list dd {
+    border: none;
+    background: var(--background-color);
+  }
+
+  .product-specs .product-specs-list dt {
+    background: #eee;
   }
 }

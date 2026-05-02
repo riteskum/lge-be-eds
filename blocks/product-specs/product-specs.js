@@ -1,4 +1,6 @@
 export default function decorate(block) {
+  block.closest('.section')?.classList.add('section-pdp-specs');
+
   const rows = [...block.children];
   const dl = document.createElement('dl');
   dl.className = 'product-specs-list';

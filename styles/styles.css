@@ -329,3 +329,31 @@ main .section.highlight {
   margin: 0;
   padding: 40px 0;
 }
+
+/* PDP section bands (Figma-aligned) */
+main .section.section-pdp-hero {
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 40px 0 48px;
+}
+
+main .section.section-pdp-gaming {
+  background-color: #0a0a0a;
+  margin: 0;
+  padding: 56px 0;
+}
+
+main .section.section-pdp-wall {
+  margin: 0;
+  padding: 48px 0;
+}
+
+main .section.section-pdp-specs {
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 48px 0 56px;
+}
+
+main .section.section-pdp-bundles {
+  padding: 48px 0 64px;
+}

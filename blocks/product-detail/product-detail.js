@@ -1,4 +1,6 @@
 export default function decorate(block) {
+  block.closest('.section')?.classList.add('section-pdp-hero');
+
   const rows = [...block.children];
   const root = document.createElement('div');
   root.className = 'product-detail-inner';
@@ -9,12 +11,22 @@ export default function decorate(block) {
       const strong = p.querySelector(':scope > strong');
       const em = p.querySelector(':scope > em');
       const hasBtn = p.querySelector('a.button');
+      const text = p.textContent.trim();
 
-      if (strong && !hasBtn && p.textContent.length < 80) {
+      if (/α11|alpha-11/i.test(text) && !hasBtn) {
+        p.classList.add('product-detail-chip');
+        return;
+      }
+      if (/Offre exclusive membres|membres LG/i.test(text) && strong && !hasBtn) {
+        p.classList.add('product-detail-promo');
+        return;
+      }
+
+      if (strong && !hasBtn && text.length < 80 && !p.classList.contains('product-detail-chip')) {
         p.classList.add('product-detail-badge');
       } else if (em && !hasBtn && /^[A-Z]{2,}[A-Z0-9][A-Z0-9._-]{4,}$/i.test(em.textContent.trim())) {
         p.classList.add('product-detail-sku');
-      } else if (!hasBtn && p.textContent.includes('€')) {
+      } else if (!hasBtn && text.includes('€') && !p.classList.contains('product-detail-promo')) {
         if (!p.classList.contains('product-detail-price')) {
           p.classList.add('product-detail-price');
           const next = p.nextElementSibling;
@@ -28,6 +40,9 @@ export default function decorate(block) {
     const lists = buy.querySelectorAll(':scope > ul');
     lists.forEach((ul) => {
       ul.classList.add('product-detail-highlights');
+      const lis = [...ul.querySelectorAll(':scope > li')];
+      lis[0]?.classList.add('product-detail-perk', 'product-detail-perk-delivery');
+      lis[1]?.classList.add('product-detail-perk', 'product-detail-perk-warranty');
     });
 
     const btnWraps = buy.querySelectorAll('.button-wrapper');
@@ -39,6 +54,40 @@ export default function decorate(block) {
       if (anchor) anchor.before(actions);
       else buy.append(actions);
     }
+  }
+
+  function setupGallery(gallery) {
+    const mainImg = gallery.querySelector('.product-detail-main-image img');
+    const thumbs = [...gallery.querySelectorAll('.product-detail-thumbs picture')];
+    if (!mainImg || !thumbs.length) return;
+
+    function setActive(pic) {
+      thumbs.forEach((t) => t.classList.toggle('is-selected', t === pic));
+      const srcImg = pic.querySelector('img');
+      if (srcImg) {
+        mainImg.src = srcImg.currentSrc || srcImg.src;
+        mainImg.alt = srcImg.alt;
+      }
+    }
+
+    thumbs.forEach((pic) => {
+      pic.addEventListener('click', () => setActive(pic));
+      pic.setAttribute('role', 'button');
+      pic.setAttribute('tabindex', '0');
+      pic.setAttribute('aria-label', pic.querySelector('img')?.alt || '');
+      pic.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setActive(pic);
+        }
+      });
+    });
+
+    const match = thumbs.find((t) => {
+      const u = t.querySelector('img')?.src;
+      return u && mainImg.src === u;
+    });
+    setActive(match || thumbs[0]);
   }
 
   rows.forEach((row) => {
@@ -73,6 +122,8 @@ export default function decorate(block) {
       rowWrap.className = 'product-detail-row';
       rowWrap.append(gallery, buy);
       root.append(rowWrap);
+
+      setupGallery(gallery);
     } else {
       const extra = document.createElement('div');
       extra.className = 'product-detail-extra';
