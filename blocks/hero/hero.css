@@ -6,9 +6,31 @@
 .hero {
   position: relative;
   min-height: 400px;
+  overflow: hidden;
+}
+
+/* Carousel track */
+.hero .hero-track {
+  position: relative;
+  width: 100%;
+  min-height: inherit;
+}
+
+/* Individual slide */
+.hero .hero-slide {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
-  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none;
+}
+
+.hero .hero-slide.active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .hero .hero-bg {
@@ -47,7 +69,8 @@
   margin-bottom: 16px;
 }
 
-.hero h1 {
+.hero h1,
+.hero h2 {
   font-size: 40px;
   font-weight: 800;
   line-height: 1.1;
@@ -56,7 +79,8 @@
   max-width: 500px;
 }
 
-.hero h1 em {
+.hero h1 em,
+.hero h2 em {
   color: var(--accent-color);
   font-style: italic;
   font-family: var(--heading-font-family);
@@ -77,7 +101,70 @@
   flex-wrap: wrap;
 }
 
-@media (width >= 900px) {
+/* Carousel arrows */
+.hero .hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgb(255 255 255 / 70%);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  transition: background 0.2s;
+}
+
+.hero .hero-arrow:hover {
+  background: rgb(255 255 255 / 95%);
+}
+
+.hero .hero-prev {
+  left: 16px;
+}
+
+.hero .hero-next {
+  right: 16px;
+}
+
+/* Carousel dots */
+.hero .hero-dots {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+}
+
+.hero .hero-dot {
+  width: 32px;
+  height: 4px;
+  border: none;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 50%);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.hero .hero-dot.active {
+  background: var(--accent-color);
+}
+
+.hero .hero-dot:hover {
+  background: rgb(255 255 255 / 80%);
+}
+
+@media (min-width: 900px) {
   .hero {
     min-height: 560px;
   }
@@ -86,8 +173,23 @@
     padding: 60px 32px;
   }
 
-  .hero h1 {
+  .hero h1,
+  .hero h2 {
     font-size: 56px;
     max-width: 550px;
+  }
+
+  .hero .hero-arrow {
+    width: 48px;
+    height: 48px;
+    font-size: 28px;
+  }
+
+  .hero .hero-prev {
+    left: 24px;
+  }
+
+  .hero .hero-next {
+    right: 24px;
   }
 }
