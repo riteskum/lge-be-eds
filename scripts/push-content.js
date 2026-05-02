@@ -303,11 +303,161 @@ const indexHtml = `<body>
   <footer></footer>
 </body>`;
 
+/* ---------- TELEVISIONS PLP content ---------- */
+const televisionsHtml = `<body>
+  <header></header>
+  <main>
+    <div>
+      <div class="breadcrumb">
+        <div><div>
+          <p><a href="/">Accueil</a></p>
+          <p><a href="/televisions">Téléviseurs</a></p>
+        </div></div>
+      </div>
+    </div>
+    <div>
+      <div class="hero">
+        <div><div>
+          <picture><img src="${imgRef('hero-oled-tv.jpg')}" alt="Gamme téléviseurs LG"></picture>
+        </div></div>
+        <div><div>
+          <h1>Téléviseurs LG</h1>
+          <p>Découvrez notre gamme complète de téléviseurs OLED, NanoCell et UHD. Des technologies d'affichage de pointe pour une expérience visuelle incomparable.</p>
+          <p><a href="#products">Explorer la gamme</a></p>
+        </div></div>
+      </div>
+    </div>
+    <div>
+      <div class="product-filter">
+        <div><div>
+          <p>Tous les téléviseurs</p>
+          <p><a href="/televisions">OLED</a></p>
+          <p><a href="/televisions">NanoCell</a></p>
+          <p><a href="/televisions">UHD 4K</a></p>
+          <p><a href="/televisions">QNED</a></p>
+        </div></div>
+      </div>
+    </div>
+    <div>
+      <h2 id="products">Notre gamme de téléviseurs</h2>
+      <p>${'6'} produits</p>
+    </div>
+    <div>
+      <div class="product-cards">
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo C3 65 pouces"></picture>
+          </div>
+          <div>
+            <p><strong>TV OLED</strong></p>
+            <h3>LG OLED evo C3 65"</h3>
+            <ul>
+              <li>Processeur α9 Gen6 AI 4K</li>
+              <li>Dolby Vision &amp; Dolby Atmos</li>
+              <li>webOS 23 Smart TV</li>
+              <li>4 ports HDMI 2.1</li>
+            </ul>
+            <p>1.799,00 €</p>
+            <p><a href="/televisions/oled-c3">Voir le produit</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo G3 77 pouces"></picture>
+          </div>
+          <div>
+            <p><strong>TV OLED</strong></p>
+            <h3>LG OLED evo G3 77"</h3>
+            <ul>
+              <li>Processeur α9 Gen6 AI 4K</li>
+              <li>Brightness Booster Max</li>
+              <li>Galerie Design ultra-fin</li>
+              <li>120Hz, HDMI 2.1 x4</li>
+            </ul>
+            <p>2.999,00 €</p>
+            <p><a href="/televisions/oled-g3">Voir le produit</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo C4 55 pouces"></picture>
+          </div>
+          <div>
+            <p><strong>TV OLED</strong></p>
+            <h3>LG OLED evo C4 55"</h3>
+            <ul>
+              <li>Processeur α9 Gen7 AI 4K</li>
+              <li>Dolby Vision &amp; HDR10</li>
+              <li>webOS 24 Smart TV</li>
+              <li>Design ultra-fin</li>
+            </ul>
+            <p>1.499,00 €</p>
+            <p><a href="/televisions/oled-c4">Voir le produit</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG NanoCell NANO81 55 pouces"></picture>
+          </div>
+          <div>
+            <p><strong>TV NanoCell</strong></p>
+            <h3>LG NanoCell NANO81 55"</h3>
+            <ul>
+              <li>Technologie NanoCell</li>
+              <li>Active HDR (HDR10, HLG)</li>
+              <li>AI Sound Pro</li>
+              <li>Game Optimizer</li>
+            </ul>
+            <p>699,00 €</p>
+            <p><a href="/televisions/nanocell-nano81">Voir le produit</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG QNED MiniLED 65 pouces"></picture>
+          </div>
+          <div>
+            <p><strong>TV QNED</strong></p>
+            <h3>LG QNED MiniLED 65"</h3>
+            <ul>
+              <li>Technologie Quantum Dot + NanoCell</li>
+              <li>Rétroéclairage Mini LED</li>
+              <li>Processeur α7 Gen6 AI 4K</li>
+              <li>120Hz natif</li>
+            </ul>
+            <p>1.199,00 €</p>
+            <p><a href="/televisions/qned-mini-led">Voir le produit</a></p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG UHD 4K UR78 50 pouces"></picture>
+          </div>
+          <div>
+            <p><strong>TV UHD 4K</strong></p>
+            <h3>LG UHD 4K UR78 50"</h3>
+            <ul>
+              <li>Résolution 4K Ultra HD</li>
+              <li>Processeur α5 Gen6 AI 4K</li>
+              <li>HDR10 Pro</li>
+              <li>webOS 23</li>
+            </ul>
+            <p>449,00 €</p>
+            <p><a href="/televisions/uhd-ur78">Voir le produit</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>`;
+
 /* ---------- Push logic ---------- */
 const pages = [
   { path: 'nav.html', label: 'Navigation', html: navHtml },
   { path: 'footer.html', label: 'Footer', html: footerHtml },
   { path: 'index.html', label: 'Homepage', html: indexHtml },
+  { path: 'televisions.html', label: 'Televisions PLP', html: televisionsHtml },
 ];
 
 /* ---------- Image files to upload ---------- */
@@ -365,7 +515,9 @@ async function pushImage(filename) {
   }
   const buffer = fs.readFileSync(filePath);
   const ext = nodePath.extname(filename).slice(1).toLowerCase();
-  const mimeMap = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', svg: 'image/svg+xml' };
+  const mimeMap = {
+    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', svg: 'image/svg+xml',
+  };
   const mediaName = toMediaName(filename);
   const blob = new Blob([buffer], { type: mimeMap[ext] || 'image/jpeg' });
   const form = new FormData();
