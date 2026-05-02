@@ -8,6 +8,11 @@ helix-importer-ui
 *.bak
 .idea
 
+# Local secrets (Figma token, etc.)
+.env
+.env.local
+.env.*.local
+
 # Local Figma API dumps (may contain design exports or tokens in paths — keep out of git)
 fig_*.json
 
