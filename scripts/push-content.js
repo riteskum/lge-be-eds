@@ -316,7 +316,7 @@ const televisionsHtml = `<body>
       </div>
     </div>
     <div>
-      <div class="hero">
+      <div class="hero banner">
         <div><div>
           <picture><img src="${imgRef('hero-oled-tv.jpg')}" alt="TV OLED evo LG"></picture>
         </div></div>
