@@ -1,16 +1,18 @@
 /**
- * Document Authoring / preview pipeline often strips /images/ URLs and emits src="about:error".
- * Repair using stable alt text → repo paths under /images/ (served from Git on *.aem.page).
+ * Document Authoring often emits broken refs (about:error, ./images/..., wrong filenames).
+ * PLP/PDP images use stable French alt text → canonical /images/ paths on
+ * *.aem.page / *.aem.live.
  */
 
 const ALT_TO_IMAGE_PATH = {
-  /* PLP — Téléviseurs (distinct asset per row; matches push televisions.html) */
+  /* PLP — Téléviseurs */
   'LG OLED evo G3 65 pouces': '/images/product-oled-c3.jpg',
   'LG OLED evo C3 55 pouces': '/images/pdp-g4-97-lifestyle.jpg',
   'LG OLED evo M3 77 pouces': '/images/pdp-g4-97-main.jpg',
   'LG OLED evo C4 65 pouces': '/images/pdp-g4-97-rear.jpg',
   'LG OLED B3 55 pouces': '/images/pdp-g4-97-side.jpg',
   'LG OLED evo G4 77 pouces': '/images/pdp-g4-97-wall.jpg',
+  /* PDP + bundles */
   'LG OLED evo G4 97 pouces — vue principale': '/images/pdp-g4-97-main.jpg',
   'Vue de profil': '/images/pdp-g4-97-side.jpg',
   'Fixation murale': '/images/pdp-g4-97-wall.jpg',
@@ -24,25 +26,50 @@ const ALT_TO_IMAGE_PATH = {
   'LG Premium Care+': '/images/features-smart-home.jpg',
 };
 
+/** Wrong basename (typo / DA rename) → canonical /images/ path */
+const SRC_TYPOS_TO_PATH = {
+  'plp-m4-97-main.jpg': '/images/pdp-g4-97-main.jpg',
+  'plp-g4-97-main.jpg': '/images/pdp-g4-97-main.jpg',
+};
+
+function pathBasename(p) {
+  const clean = p.replace(/^\.\//, '').split('?')[0];
+  const parts = clean.split('/');
+  return parts[parts.length - 1] || '';
+}
+
 /**
  * @param {Element} root Usually `main`
  */
 export default function fixBrokenAemImages(root) {
   if (!root) return;
+
   root.querySelectorAll('img').forEach((img) => {
-    const raw = img.getAttribute('src') || '';
     const alt = (img.getAttribute('alt') || '').trim();
-    const path = ALT_TO_IMAGE_PATH[alt];
-    if (!path) return;
+    const raw = (img.getAttribute('src') || '').trim();
 
-    const broken = !raw || raw === 'about:error' || raw.startsWith('about:');
-    const looksGood = (raw.startsWith('/images/') || raw.startsWith('http')) && !broken;
-    if (looksGood) return;
+    const canonical = ALT_TO_IMAGE_PATH[alt];
+    if (canonical) {
+      try {
+        const target = new URL(canonical, window.location.origin).href;
+        const resolvedCurrent = (img.src || '').split('?')[0];
+        const resolvedTarget = target.split('?')[0];
+        if (resolvedCurrent === resolvedTarget) return;
+        img.src = target;
+      } catch {
+        img.setAttribute('src', canonical);
+      }
+      return;
+    }
 
-    try {
-      img.src = new URL(path, window.location.origin).href;
-    } catch {
-      img.setAttribute('src', path);
+    const base = pathBasename(raw).toLowerCase();
+    const typoPath = SRC_TYPOS_TO_PATH[base];
+    if (typoPath) {
+      try {
+        img.src = new URL(typoPath, window.location.origin).href;
+      } catch {
+        img.setAttribute('src', typoPath);
+      }
     }
   });
 }

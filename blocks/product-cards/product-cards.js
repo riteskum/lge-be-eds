@@ -8,8 +8,14 @@ export default function decorate(block) {
 
     const imageCol = cols[0];
     if (imageCol) {
-      const picture = imageCol.querySelector('picture');
-      if (picture) {
+      let picNode = imageCol.querySelector('picture');
+      const orphanImg = imageCol.querySelector(':scope img:not(picture img)');
+      if (!picNode && orphanImg) {
+        picNode = document.createElement('picture');
+        orphanImg.replaceWith(picNode);
+        picNode.append(orphanImg);
+      }
+      if (picNode) {
         const imgWrap = document.createElement('div');
         imgWrap.className = 'product-cards-image';
 
@@ -28,7 +34,7 @@ export default function decorate(block) {
           imgWrap.append(badgeEl);
         }
 
-        imgWrap.append(picture);
+        imgWrap.append(picNode);
         li.append(imgWrap);
       }
     }
