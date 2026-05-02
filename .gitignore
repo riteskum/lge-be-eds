@@ -8,6 +8,9 @@ helix-importer-ui
 *.bak
 .idea
 
+# Local Figma API dumps (may contain design exports or tokens in paths — keep out of git)
+fig_*.json
+
 # Ensure these files are tracked
 !CLAUDE.md
 !AGENTS.md
