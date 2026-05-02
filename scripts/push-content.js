@@ -415,12 +415,70 @@ const televisionsHtml = `<body>
   <footer></footer>
 </body>`;
 
+/* ---------- PDP: OLED G3 (node 1-668 — layout aligned with LG PDP / Figma-style) ---------- */
+const oledG3Html = `<body>
+  <header></header>
+  <main>
+    <div>
+      <div class="breadcrumb">
+        <div><div>
+          <p><a href="/">Accueil</a></p>
+          <p><a href="/televisions">Téléviseurs</a></p>
+          <p><a href="/televisions/oled-g3">LG OLED evo G3 65"</a></p>
+        </div></div>
+      </div>
+    </div>
+    <div>
+      <div class="product-detail">
+        <div>
+          <div>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo G3 65 pouces — vue principale"></picture>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="Vue alternative 1"></picture>
+            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="Vue alternative 2"></picture>
+          </div>
+          <div>
+            <p><strong>NOUVEAUTÉ 2024</strong></p>
+            <h1>LG OLED evo G3 65'' 4K Smart TV</h1>
+            <p><em>OLED65G36LA</em></p>
+            <p>2 799 €</p>
+            <p>Prix conseillé</p>
+            <p><strong><a href="#">Acheter</a></strong></p>
+            <p><em><a href="/televisions">Ajouter au comparateur</a></em></p>
+            <ul>
+              <li>OLED evo avec Brightness Booster Max — noir absolu et luminosité exceptionnelle</li>
+              <li>Processeur α9 AI Processor Gen6 4K avec Deep Learning</li>
+              <li>Dolby Vision · Dolby Atmos · FILMMAKER MODE™ · HDR10 Pro</li>
+              <li>4 × HDMI 2.1 (48 Gbps) · VRR · ALLM · webOS 23 — ThinQ AI</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h2>Caractéristiques techniques</h2>
+      <div class="product-specs">
+        <div><div><p>Type d'écran</p></div><div><p>OLED evo 4K Ultra HD (3840 × 2160)</p></div></div>
+        <div><div><p>Diagonal</p></div><div><p>65" (165 cm)</p></div></div>
+        <div><div><p>Processeur</p></div><div><p>α9 AI Processor Gen6 4K</p></div></div>
+        <div><div><p>Rétroéclairage</p></div><div><p>OLED auto-émissif (pixels individuels)</p></div></div>
+        <div><div><p>HDR</p></div><div><p>Dolby Vision · HDR10 · HLG · Dolby Vision IQ</p></div></div>
+        <div><div><p>Audio</p></div><div><p>4.2 canaux · 60 W · Dolby Atmos · AI Sound Pro</p></div></div>
+        <div><div><p>HDMI</p></div><div><p>4 × HDMI 2.1 (eARC · QMS · QFT · ALLM · VRR jusqu'à 144 Hz)</p></div></div>
+        <div><div><p>Smart TV</p></div><div><p>webOS 23 · ThinQ AI · compatible Alexa / Google Assistant</p></div></div>
+        <div><div><p>Consommation</p></div><div><p>Classe énergétique F (UE) — voir étiquette produit</p></div></div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>`;
+
 /* ---------- Push logic ---------- */
 const pages = [
   { path: 'nav.html', label: 'Navigation', html: navHtml },
   { path: 'footer.html', label: 'Footer', html: footerHtml },
   { path: 'index.html', label: 'Homepage', html: indexHtml },
   { path: 'televisions.html', label: 'Televisions PLP', html: televisionsHtml },
+  { path: 'televisions/oled-g3.html', label: 'PDP OLED G3', html: oledG3Html },
 ];
 
 /* ---------- Image files to upload ---------- */
