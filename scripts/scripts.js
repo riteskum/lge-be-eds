@@ -11,6 +11,7 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
+import fixBrokenAemImages from './fix-broken-images.js';
 
 /**
  * Builds hero block and prepends to main in a new section.
@@ -119,6 +120,7 @@ function decorateButtons(main) {
  */
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
+  fixBrokenAemImages(main);
   decorateIcons(main);
   buildAutoBlocks(main);
   decorateSections(main);

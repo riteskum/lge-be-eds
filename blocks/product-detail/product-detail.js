@@ -90,8 +90,19 @@ export default function decorate(block) {
     setActive(match || thumbs[0]);
   }
 
+  function wrapBareImagesInPicture(col) {
+    if (!col) return;
+    [...col.querySelectorAll('img')].forEach((img) => {
+      if (img.closest('picture')) return;
+      const pic = document.createElement('picture');
+      img.replaceWith(pic);
+      pic.append(img);
+    });
+  }
+
   rows.forEach((row) => {
     const cols = [...row.children];
+    if (cols[0]) wrapBareImagesInPicture(cols[0]);
     const hasGallery = cols[0]?.querySelector('picture');
 
     if (cols.length >= 2 && hasGallery) {
