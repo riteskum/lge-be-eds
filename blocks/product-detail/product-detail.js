@@ -12,7 +12,7 @@ export default function decorate(block) {
 
       if (strong && !hasBtn && p.textContent.length < 80) {
         p.classList.add('product-detail-badge');
-      } else if (em && !hasBtn && /^[A-Z0-9]{6,}$/i.test(em.textContent.trim())) {
+      } else if (em && !hasBtn && /^[A-Z]{2,}[A-Z0-9][A-Z0-9._-]{4,}$/i.test(em.textContent.trim())) {
         p.classList.add('product-detail-sku');
       } else if (!hasBtn && p.textContent.includes('€')) {
         if (!p.classList.contains('product-detail-price')) {

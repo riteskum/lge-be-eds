@@ -415,7 +415,7 @@ const televisionsHtml = `<body>
   <footer></footer>
 </body>`;
 
-/* ---------- PDP: OLED G3 (node 1-668 — layout aligned with LG PDP / Figma-style) ---------- */
+/* ---------- PDP: /televisions/oled-g3 — Figma 2z5R2B… node 1-2 (G4 97" Gallery) ---------- */
 const oledG3Html = `<body>
   <header></header>
   <main>
@@ -424,7 +424,7 @@ const oledG3Html = `<body>
         <div><div>
           <p><a href="/">Accueil</a></p>
           <p><a href="/televisions">Téléviseurs</a></p>
-          <p><a href="/televisions/oled-g3">LG OLED evo G3 65"</a></p>
+          <p><a href="/televisions/oled-g3">LG OLED evo G4 97"</a></p>
         </div></div>
       </div>
     </div>
@@ -432,24 +432,58 @@ const oledG3Html = `<body>
       <div class="product-detail">
         <div>
           <div>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="LG OLED evo G3 65 pouces — vue principale"></picture>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="Vue alternative 1"></picture>
-            <picture><img src="${imgRef('product-oled-c3.jpg')}" alt="Vue alternative 2"></picture>
+            <picture><img src="${imgRef('pdp-g4-97-main.jpg')}" alt="LG OLED evo G4 97 pouces — vue principale"></picture>
+            <picture><img src="${imgRef('pdp-g4-97-side.jpg')}" alt="Vue de profil"></picture>
+            <picture><img src="${imgRef('pdp-g4-97-wall.jpg')}" alt="Fixation murale"></picture>
+            <picture><img src="${imgRef('pdp-g4-97-lifestyle.jpg')}" alt="Ambiance salon"></picture>
+            <picture><img src="${imgRef('pdp-g4-97-rear.jpg')}" alt="Connectique arrière"></picture>
+            <picture><img src="${imgRef('pdp-g4-97-mount.jpg')}" alt="Support mural motorisé"></picture>
           </div>
           <div>
-            <p><strong>NOUVEAUTÉ 2024</strong></p>
-            <h1>LG OLED evo G3 65'' 4K Smart TV</h1>
-            <p><em>OLED65G36LA</em></p>
-            <p>2 799 €</p>
+            <p><strong>G4 SERIES | GALLERY EDITION</strong></p>
+            <h1>LG OLED evo G4 97'' 4K Smart TV</h1>
+            <p><em>OLED97G45LW.BEU</em></p>
+            <p>α11 · Processeur AI alpha-11 · Performances IA jusqu'à 300 % plus rapides pour une netteté absolue</p>
+            <p>24 999,00 €</p>
             <p>Prix conseillé</p>
+            <p><strong>Offre exclusive membres LG :</strong> 5 % sur votre premier achat + installation premium offerte.</p>
             <p><strong><a href="#">Acheter</a></strong></p>
-            <p><em><a href="/televisions">Ajouter au comparateur</a></em></p>
+            <p><em><a href="/televisions">Trouver un revendeur</a></em></p>
             <ul>
-              <li>OLED evo avec Brightness Booster Max — noir absolu et luminosité exceptionnelle</li>
-              <li>Processeur α9 AI Processor Gen6 4K avec Deep Learning</li>
-              <li>Dolby Vision · Dolby Atmos · FILMMAKER MODE™ · HDR10 Pro</li>
-              <li>4 × HDMI 2.1 (48 Gbps) · VRR · ALLM · webOS 23 — ThinQ AI</li>
+              <li>Livraison premium «&nbsp;White Glove&nbsp;» incluse</li>
+              <li>Garantie panneau 5 ans</li>
+              <li>Brightness Booster Max · AI Super Upscaling · One Wall Design</li>
+              <li>Jeu 4K 144 Hz · 0,1 ms · HDMI 2.1 × 4 · G-Sync / FreeSync</li>
             </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="columns">
+        <div>
+          <div>
+            <picture><img src="${imgRef('pdp-g4-97-lifestyle.jpg')}" alt="Ambiance LG OLED G4"></picture>
+          </div>
+          <div>
+            <h2>L'intelligence derrière le chef-d'œuvre</h2>
+            <p>Découvrez le processeur <strong>alpha-11 AI</strong>, notre neural chip le plus puissant dédié à l'OLED. Il analyse chaque scène pour une précision et un réalisme inégalés.</p>
+            <p><strong>Brightness Booster Max</strong> — architecture lumineuse dédiée, jusqu'à +150 % de luminosité de crête vs OLED conventionnel.</p>
+            <p><strong>AI Super Upscaling</strong> — réduction du bruit et super-résolution IA image par image.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="columns">
+        <div>
+          <div>
+            <picture><img src="${imgRef('pdp-g4-97-rear.jpg')}" alt="Jeu sur LG OLED G4"></picture>
+          </div>
+          <div>
+            <h2>Jeu légendaire</h2>
+            <p><strong>Vitesse 144 Hz inégalée</strong> — première OLED 97" 4K 144 Hz. Réponse 0,1 ms, compatibilité G-Sync, FreeSync Premium et HGIG pour le HDR gaming.</p>
+            <p>Quatre ports <strong>HDMI 2.1</strong> (eARC, VRR) pour consoles et PC nouvelle génération.</p>
           </div>
         </div>
       </div>
@@ -457,15 +491,16 @@ const oledG3Html = `<body>
     <div>
       <h2>Caractéristiques techniques</h2>
       <div class="product-specs">
-        <div><div><p>Type d'écran</p></div><div><p>OLED evo 4K Ultra HD (3840 × 2160)</p></div></div>
-        <div><div><p>Diagonal</p></div><div><p>65" (165 cm)</p></div></div>
-        <div><div><p>Processeur</p></div><div><p>α9 AI Processor Gen6 4K</p></div></div>
-        <div><div><p>Rétroéclairage</p></div><div><p>OLED auto-émissif (pixels individuels)</p></div></div>
-        <div><div><p>HDR</p></div><div><p>Dolby Vision · HDR10 · HLG · Dolby Vision IQ</p></div></div>
-        <div><div><p>Audio</p></div><div><p>4.2 canaux · 60 W · Dolby Atmos · AI Sound Pro</p></div></div>
-        <div><div><p>HDMI</p></div><div><p>4 × HDMI 2.1 (eARC · QMS · QFT · ALLM · VRR jusqu'à 144 Hz)</p></div></div>
-        <div><div><p>Smart TV</p></div><div><p>webOS 23 · ThinQ AI · compatible Alexa / Google Assistant</p></div></div>
-        <div><div><p>Consommation</p></div><div><p>Classe énergétique F (UE) — voir étiquette produit</p></div></div>
+        <div><div><p>Type d'affichage</p></div><div><p>4K OLED evo</p></div></div>
+        <div><div><p>Diagonal</p></div><div><p>97" (246 cm)</p></div></div>
+        <div><div><p>Résolution</p></div><div><p>3840 × 2160</p></div></div>
+        <div><div><p>Processeur</p></div><div><p>α11 AI Processor 4K</p></div></div>
+        <div><div><p>Fréquence</p></div><div><p>Jusqu'à 144 Hz (4K)</p></div></div>
+        <div><div><p>Entrées HDMI</p></div><div><p>4 × HDMI 2.1 (eARC, VRR)</p></div></div>
+        <div><div><p>Technologies jeu</p></div><div><p>G-Sync · FreeSync Premium · HGIG · ALLM</p></div></div>
+        <div><div><p>HDR</p></div><div><p>Dolby Vision · HDR10 · HLG</p></div></div>
+        <div><div><p>Audio</p></div><div><p>Compatible LG Soundbar S95TR (illustration design)</p></div></div>
+        <div><div><p>Référence</p></div><div><p>OLED97G45LW.BEU</p></div></div>
       </div>
     </div>
   </main>
@@ -498,6 +533,12 @@ const imageFiles = [
   'product-vivace-v9.jpg',
   'product-ultragear-27.jpg',
   'features-smart-home.jpg',
+  'pdp-g4-97-main.jpg',
+  'pdp-g4-97-side.jpg',
+  'pdp-g4-97-wall.jpg',
+  'pdp-g4-97-lifestyle.jpg',
+  'pdp-g4-97-rear.jpg',
+  'pdp-g4-97-mount.jpg',
 ];
 
 /* ---------- Push helpers ---------- */
@@ -564,14 +605,16 @@ async function pushImage(filename) {
   console.log(`\nPushing content to DA (${ORG}/${REPO}) …\n`);
 
   console.log('Uploading images as media_ blobs …');
-  for (const img of imageFiles) {
-    await pushImage(img);
-  }
+  await imageFiles.reduce(
+    (chain, img) => chain.then(() => pushImage(img)),
+    Promise.resolve(),
+  );
 
   console.log('\nPushing pages …');
-  for (const page of pages) {
-    await pushHtml(page);
-  }
+  await pages.reduce(
+    (chain, page) => chain.then(() => pushHtml(page)),
+    Promise.resolve(),
+  );
 
   console.log('\nDone! Visit https://main--lge-be-eds--riteskum.aem.page/ to see the result.\n');
 })();
