@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
-Generate AEM On-Premise to EDS Migration Estimate (REVISED v2.0)
+Generate AEM On-Premise to EDS Migration Estimate (REVISED v3.0)
 Samsung Semiconductor + LED Website
 Adobe Professional Format
 
-REVISION NOTES:
-- Block development effort reduced by leveraging AEM Block Collection/Block Party
-- Blocks categorized as: Reuse (style-only), Extend (customize), Custom (new build)
-- Asset migration effort increased based on actual DAM report (229GB, 1.69M nodes)
+REVISION v3.0 NOTES:
+- Incorporates Samsung's internal migration analysis document
+- Actual page count: 31,603 pages across 9 regions (not 350-500 estimated)
+- Actual component count: 643 components / 132+ types
+- 6 custom OSGi bundles, external MySQL, Akamai NetStorage dependencies
+- 44 WCM templates + 6 template-types
+- Block Library reuse strategy maintained
+- Samsung's own assessment: Large category, 9-12 months
 """
 
 import openpyxl
@@ -35,12 +39,14 @@ body_bold_font = Font(name="Adobe Clean", size=10, bold=True, color=ADOBE_DARK)
 total_font = Font(name="Adobe Clean", size=11, bold=True, color=ADOBE_RED)
 section_font = Font(name="Adobe Clean", size=11, bold=True, color=ADOBE_BLUE)
 reuse_font = Font(name="Adobe Clean", size=10, color=ADOBE_GREEN, bold=True)
+warning_font = Font(name="Adobe Clean", size=10, bold=True, color="FF6600")
 
 header_fill = PatternFill(start_color=HEADER_BG, end_color=HEADER_BG, fill_type="solid")
 alt_fill = PatternFill(start_color=ADOBE_LIGHT_GRAY, end_color=ADOBE_LIGHT_GRAY, fill_type="solid")
 total_fill = PatternFill(start_color="FFF0F0", end_color="FFF0F0", fill_type="solid")
 section_fill = PatternFill(start_color="E8F4FD", end_color="E8F4FD", fill_type="solid")
 reuse_fill = PatternFill(start_color="E8F8F0", end_color="E8F8F0", fill_type="solid")
+warning_fill = PatternFill(start_color="FFF3E0", end_color="FFF3E0", fill_type="solid")
 
 thin_border = Border(
     left=Side(style='thin', color='DDDDDD'),
@@ -63,7 +69,7 @@ def style_header_row(ws, row, cols):
         cell.border = thin_border
 
 
-def style_data_row(ws, row, cols, is_alt=False, is_total=False, is_section=False, is_reuse=False):
+def style_data_row(ws, row, cols, is_alt=False, is_total=False, is_section=False, is_reuse=False, is_warning=False):
     for col in range(1, cols + 1):
         cell = ws.cell(row=row, column=col)
         cell.border = thin_border
@@ -76,6 +82,9 @@ def style_data_row(ws, row, cols, is_alt=False, is_total=False, is_section=False
         elif is_reuse:
             cell.font = body_font
             cell.fill = reuse_fill
+        elif is_warning:
+            cell.font = body_font
+            cell.fill = warning_fill
         else:
             cell.font = body_font
             if is_alt:
@@ -96,11 +105,10 @@ def create_workbook():
     ws_exec.title = "Executive Summary"
     ws_exec.sheet_properties.tabColor = ADOBE_RED
 
-    # Set column widths
     ws_exec.column_dimensions['A'].width = 5
-    ws_exec.column_dimensions['B'].width = 80
-    ws_exec.column_dimensions['C'].width = 25
-    ws_exec.column_dimensions['D'].width = 25
+    ws_exec.column_dimensions['B'].width = 85
+    ws_exec.column_dimensions['C'].width = 28
+    ws_exec.column_dimensions['D'].width = 28
 
     row = 2
     ws_exec.cell(row=row, column=2, value="ADOBE EXPERIENCE MANAGER").font = Font(name="Adobe Clean", size=10, color=ADOBE_RED, bold=True)
@@ -109,7 +117,7 @@ def create_workbook():
     row += 1
     ws_exec.cell(row=row, column=2, value="Samsung Semiconductor & LED Division").font = subtitle_font
     row += 1
-    ws_exec.cell(row=row, column=2, value="REVISED v2.0 — Optimized with AEM Block Library Reuse").font = Font(name="Adobe Clean", size=10, italic=True, color=ADOBE_GREEN)
+    ws_exec.cell(row=row, column=2, value="REVISED v3.0 — Based on Samsung Internal Migration Analysis + DAM Report").font = Font(name="Adobe Clean", size=10, italic=True, color=ADOBE_RED)
     row += 2
 
     # Project Overview
@@ -118,13 +126,17 @@ def create_workbook():
 
     overview_items = [
         ("Client:", "Samsung Electronics - Semiconductor Division"),
-        ("Source Platform:", "AEM On-Premise (6.x)"),
+        ("Source Platform:", "AEM 6.5 On-Premise (Large instance)"),
         ("Target Platform:", "AEM Edge Delivery Services (Cloud)"),
         ("Websites in Scope:", "semiconductor.samsung.com + led.samsung.com"),
+        ("Total Pages:", "31,603 pages across 9 regions"),
+        ("Total Components:", "643 component nodes / 132+ types"),
         ("DAM Size:", "229.17 GB | 1,692,306 nodes | 8,815,757 properties"),
+        ("Languages:", "4 locales (EN, KR, JP, CN) × 9 regions"),
+        ("Samsung Classification:", "LARGE (9-12 months standard)"),
         ("Date:", "May 2026"),
         ("Prepared by:", "Adobe Professional Services"),
-        ("Version:", "2.0 (Revised — Block Library reuse optimization)"),
+        ("Version:", "3.0 (Based on Samsung internal analysis document)"),
     ]
 
     for label, value in overview_items:
@@ -133,40 +145,45 @@ def create_workbook():
         row += 1
 
     row += 2
-    ws_exec.cell(row=row, column=2, value="DAM REPOSITORY ANALYSIS").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
+    ws_exec.cell(row=row, column=2, value="CURRENT STATE — FROM SAMSUNG INTERNAL ANALYSIS").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
     row += 2
 
-    # DAM table
-    dam_headers = ["DAM Folder", "Size", "Nodes"]
-    ws_exec.cell(row=row, column=2, value=dam_headers[0])
-    ws_exec.cell(row=row, column=3, value=dam_headers[1])
-    ws_exec.cell(row=row, column=4, value=dam_headers[2])
-    for col in range(2, 5):
+    # Regional page breakdown
+    region_headers = ["Region", "Size", "Pages", "Notes"]
+    for col, h in enumerate(region_headers, 2):
+        ws_exec.cell(row=row, column=col, value=h)
+    for col in range(2, 6):
         cell = ws_exec.cell(row=row, column=col)
         cell.font = header_font
         cell.fill = header_fill
         cell.alignment = center_align
         cell.border = thin_border
+    ws_exec.column_dimensions['E'].width = 45
     row += 1
 
-    dam_data = [
-        ("/content/dam/samsung", "224.62 GB", "1,626,711"),
-        ("/content/dam/test", "4.55 GB", "65,295"),
-        ("/content/dam/_CSS", "458 KB", "109"),
-        ("/content/dam/formsanddocuments", "1,266 bytes", "26"),
-        ("/content/dam/collections", "3,427 bytes", "62"),
-        ("TOTAL", "229.17 GB", "1,692,306"),
+    regions = [
+        ("global", "347 MB", "7,128", "Global master + multi-region master content"),
+        ("kr", "225 MB", "5,674", "Korea (ko_kr)"),
+        ("us", "193 MB", "5,351", "US + careers dedicated components"),
+        ("emea", "171 MB", "5,041", "Europe + searchjobs dedicated"),
+        ("jp", "171 MB", "4,007", "Japan (ja_jp)"),
+        ("cn", "155 MB", "4,298", "China (zh_cn)"),
+        ("de", "2.2 MB", "33", "Germany (small, insights/newsroom only)"),
+        ("ssir", "936 KB", "19", "SSIR dedicated small site"),
+        ("ds-test", "6.2 MB", "52", "Test/staging content"),
+        ("TOTAL", "1.3 GB", "31,603", ""),
     ]
 
-    for i, (folder, size, nodes) in enumerate(dam_data):
-        ws_exec.cell(row=row, column=2, value=folder)
+    for i, (reg, size, pages, notes) in enumerate(regions):
+        ws_exec.cell(row=row, column=2, value=reg)
         ws_exec.cell(row=row, column=3, value=size)
-        ws_exec.cell(row=row, column=4, value=nodes)
-        is_t = (i == len(dam_data) - 1)
-        for col in range(2, 5):
+        ws_exec.cell(row=row, column=4, value=pages)
+        ws_exec.cell(row=row, column=5, value=notes)
+        is_t = (i == len(regions) - 1)
+        for col in range(2, 6):
             cell = ws_exec.cell(row=row, column=col)
             cell.border = thin_border
-            cell.alignment = center_align if col > 2 else left_align
+            cell.alignment = center_align if col in [3, 4] else left_align
             if is_t:
                 cell.font = total_font
                 cell.fill = total_fill
@@ -178,14 +195,59 @@ def create_workbook():
         row += 1
 
     row += 2
-    ws_exec.cell(row=row, column=2, value="SCOPE SUMMARY (REVISED)").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
+    ws_exec.cell(row=row, column=2, value="COMPONENT INVENTORY SUMMARY").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
     row += 2
 
-    # Scope table
+    comp_headers = ["Category", "Types", "Key Components"]
+    for col, h in enumerate(comp_headers, 2):
+        ws_exec.cell(row=row, column=col, value=h)
+    for col in range(2, 5):
+        cell = ws_exec.cell(row=row, column=col)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_align
+        cell.border = thin_border
+    row += 1
+
+    components = [
+        ("global/content/statics", "44", "hero, accordion, carousel, feature-benefit, table, etc."),
+        ("global/content/common", "26", "gnb, footer, breadcrumb, hashtag, contactus, cookie"),
+        ("global/content/product", "21", "hero, lnb, spec, product-finder, related-resources"),
+        ("global/content/event", "16", "login, mypage, webinar-regist, subscription"),
+        ("global/content/article", "11", "article-grid, event-calendar, event-grid, popular-news"),
+        ("global/content/search", "4", "search-grid, search-publications"),
+        ("global/content/careers", "2", "job-list, job-detail"),
+        ("global/page (templates)", "6", "product-page, content-page, empty-page, etc."),
+        ("Region-specific", "2", "emea/searchjobs, us/careers"),
+        ("TOTAL", "132+ types / 643 nodes", "Including variants"),
+    ]
+
+    for i, (cat, types, comps) in enumerate(components):
+        ws_exec.cell(row=row, column=2, value=cat)
+        ws_exec.cell(row=row, column=3, value=types)
+        ws_exec.cell(row=row, column=4, value=comps)
+        is_t = (i == len(components) - 1)
+        for col in range(2, 5):
+            cell = ws_exec.cell(row=row, column=col)
+            cell.border = thin_border
+            cell.alignment = left_align
+            if is_t:
+                cell.font = total_font
+                cell.fill = total_fill
+            elif i % 2 == 0:
+                cell.fill = alt_fill
+                cell.font = body_font
+            else:
+                cell.font = body_font
+        row += 1
+
+    row += 2
+    ws_exec.cell(row=row, column=2, value="SCOPE SUMMARY (REVISED v3.0)").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
+    row += 2
+
     scope_headers = ["Metric", "Semiconductor Only", "Semiconductor + LED"]
-    ws_exec.cell(row=row, column=2, value=scope_headers[0])
-    ws_exec.cell(row=row, column=3, value=scope_headers[1])
-    ws_exec.cell(row=row, column=4, value=scope_headers[2])
+    for col, h in enumerate(scope_headers, 2):
+        ws_exec.cell(row=row, column=col, value=h)
     for col in range(2, 5):
         cell = ws_exec.cell(row=row, column=col)
         cell.font = header_font
@@ -195,17 +257,21 @@ def create_workbook():
     row += 1
 
     scope_data = [
-        ("Estimated Page Count", "350-500+", "400-580+"),
-        ("DAM Assets to Migrate", "224 GB (~1.6M nodes)", "229 GB (~1.7M nodes)"),
-        ("Unique Page Templates", "7-9", "10-12"),
-        ("Total Blocks Required", "25-30", "35-40"),
-        ("  → Reuse from Block Library (style only)", "10-12", "12-15"),
-        ("  → Extend/Customize existing blocks", "8-10", "10-13"),
-        ("  → Custom Development (new blocks)", "7-8", "10-12"),
-        ("Languages/Locales", "4 (EN, KR, CN, JP)", "4 + 6 Regions"),
-        ("Integrations", "5-7", "7-9"),
-        ("Total Effort (Person-Days)", "390-420", "520-560"),
-        ("Duration (Weeks)", "18-22", "24-28"),
+        ("Total Pages (confirmed)", "31,603", "31,603 + ~80 LED pages"),
+        ("Regions", "9", "9 + 6 LED regional variants"),
+        ("Languages/Locales", "4 (EN, KR, JP, CN)", "4"),
+        ("Source Components (AEM)", "643 nodes / 132+ types", "643 + LED-specific"),
+        ("Target EDS Blocks", "35-40", "45-52"),
+        ("  → Reuse from Block Library", "12-15 (style only)", "15-18"),
+        ("  → Extend/Customize", "10-12", "12-15"),
+        ("  → Custom Development", "10-13", "15-19"),
+        ("WCM Templates → EDS Templates", "44 + 6 types → 8-10 EDS", "8-10 + 3 LED"),
+        ("OSGi Bundles to Externalize", "6 custom + 3 third-party", "Same (shared)"),
+        ("External Integrations", "MySQL, Akamai, Search", "MySQL, Akamai, Search + LED tools"),
+        ("Custom Admin UIs", "5 (PIM, privacy, terms, site-ia, tasks)", "Same (shared)"),
+        ("DAM Assets", "229 GB / 1.69M nodes", "229 GB / 1.69M nodes"),
+        ("Total Effort (Person-Days)", "680-780", "830-950"),
+        ("Duration", "9-12 months", "11-14 months"),
     ]
 
     for i, (metric, semi, both) in enumerate(scope_data):
@@ -230,215 +296,201 @@ def create_workbook():
         row += 1
 
     row += 2
-    ws_exec.cell(row=row, column=2, value="BLOCK REUSE STRATEGY — KEY OPTIMIZATION").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_GREEN)
+    ws_exec.cell(row=row, column=2, value="CRITICAL ARCHITECTURE DIFFERENCES: AEM On-Prem vs EDS").font = Font(name="Adobe Clean", size=12, bold=True, color="FF6600")
     row += 2
 
-    reuse_note = [
-        "The revised estimate leverages the AEM Block Collection, Block Party, and EDS Boilerplate to significantly",
-        "reduce custom development effort. Blocks are categorized into three tiers:",
+    arch_notes = [
+        "★ AEM 6.5 uses server-side rendering (HTL/Sling) — EDS uses client-side vanilla JS decoration",
+        "★ 643 AEM components (HTL) CANNOT be auto-migrated to EDS blocks — must be re-implemented",
+        "★ 6 OSGi bundles (Java) have NO equivalent in EDS — must be externalized as API microservices",
+        "★ MySQL direct JDBC connection NOT possible in EDS — requires REST API service layer",
+        "★ Akamai NetStorage dependency → EDS has its own CDN; assets delivered from edge",
+        "★ 5 Custom Admin UIs (PIM, privacy, etc.) → requires separate headless admin application",
+        "★ 44 WCM Templates → reduced to 8-10 EDS page templates (document-based authoring)",
+        "★ Content migration: 31,603 pages require automated import with per-region validation",
         "",
-        "• REUSE (Style Only) — Block exists in AEM library; only brand CSS customization needed (~2-3 days each)",
-        "    Examples: Hero, Cards, Carousel, Tabs, Accordion, Video, Breadcrumb, Columns, CTA",
-        "",
-        "• EXTEND (Customize) — Block library provides foundation; requires JS/logic modifications (~4-6 days each)",
-        "    Examples: Header/Nav (mega menu), Footer, FAQ, News Listing, Contact Form",
-        "",
-        "• CUSTOM (New Development) — No library equivalent; full custom build required (~8-12 days each)",
-        "    Examples: Product Specs Table, LED Calculators, Virtual Exhibition, Multi-step Wizard",
-        "",
-        "This approach reduces Block Development from 147 days → 95 days (35% savings) for Semiconductor.",
+        "NOTE: AEM Modernization Tools/Agent are designed for AEM 6.x → AEMaaCS (same architecture).",
+        "They do NOT apply to EDS migration since EDS is architecturally different (no JCR, no OSGi, no HTL).",
     ]
 
-    for item in reuse_note:
-        ws_exec.cell(row=row, column=2, value=item).font = body_font
-        row += 1
-
-    row += 2
-    ws_exec.cell(row=row, column=2, value="KEY ASSUMPTIONS & RISKS").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
-    row += 2
-
-    assumptions = [
-        "• DAM contains 229GB / 1.69M nodes — asset migration requires phased approach with selective optimization",
-        "• Not all DAM assets will be migrated — audit needed to identify active vs. archival content",
-        "• Content migration assumes automated tooling (AEM Importer) with manual QA for critical pages",
-        "• Foundry section (samsungfoundry.com) B2B portal is OUT OF SCOPE (separate platform)",
-        "• Consumer Storage section redirects to samsung.com — OUT OF SCOPE",
-        "• AEM Block Collection/Block Party provides reusable foundation for 60-70% of blocks",
-        "• Multi-language support requires i18n framework setup; content translation is client responsibility",
-        "• Search functionality will leverage AEM EDS indexing or third-party search (Algolia/Coveo)",
-        "• LED Calculator tools require custom JavaScript development (no library equivalent)",
-        "• Cookie consent and GDPR compliance requires OneTrust or similar integration",
-        "• Performance target: Lighthouse score ≥ 95 on all page templates",
-        "• UAT and content freeze periods to be agreed upon during project planning",
-    ]
-
-    for item in assumptions:
-        ws_exec.cell(row=row, column=2, value=item).font = body_font
-        row += 1
-
-    row += 2
-    ws_exec.cell(row=row, column=2, value="RECOMMENDED APPROACH").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
-    row += 2
-
-    approach = [
-        "Phase 1: Discovery & Architecture (3-4 weeks) — Site audit, DAM analysis, block inventory, template mapping",
-        "Phase 2: Foundation Setup (2-3 weeks) — EDS project, design system, boilerplate blocks",
-        "Phase 3: Block Development (5-7 weeks) — Reuse/extend library blocks + custom builds",
-        "Phase 4: Content & Asset Migration (5-7 weeks) — Automated import, DAM selective migration, QA",
-        "Phase 5: Testing & Launch (4-5 weeks) — Performance, accessibility, UAT, go-live",
-    ]
-
-    for item in approach:
-        ws_exec.cell(row=row, column=2, value=item).font = body_font
+    for item in arch_notes:
+        ws_exec.cell(row=row, column=2, value=item).font = body_font if not item.startswith("★") else warning_font
         row += 1
 
     # ============================================================
-    # SHEET 2: Detailed Estimate - Semiconductor Only (REVISED)
+    # SHEET 2: Detailed Estimate - Semiconductor (REVISED v3.0)
     # ============================================================
     ws_semi = wb.create_sheet("Semiconductor - Detailed")
     ws_semi.sheet_properties.tabColor = ADOBE_BLUE
 
-    # Column widths
-    col_widths = [5, 8, 48, 15, 15, 15, 15, 45]
+    col_widths = [5, 8, 52, 15, 15, 15, 15, 50]
     for i, w in enumerate(col_widths, 1):
         ws_semi.column_dimensions[get_column_letter(i)].width = w
 
     row = 2
-    ws_semi.cell(row=row, column=2, value="Samsung Semiconductor - EDS Migration (REVISED — Block Reuse Optimized)").font = title_font
+    ws_semi.cell(row=row, column=2, value="Samsung Semiconductor - EDS Migration (REVISED v3.0)").font = title_font
     row += 1
-    ws_semi.cell(row=row, column=2, value="Excluding LED | DAM: 224.62 GB / 1,626,711 nodes").font = subtitle_font
+    ws_semi.cell(row=row, column=2, value="Based on: 31,603 pages | 643 components | 229GB DAM | 9 regions | 6 OSGi bundles").font = subtitle_font
     row += 2
 
-    # Headers
     headers = ["#", "Work Stream", "Task", "Complexity", "Effort (Days)", "Resources", "Notes"]
     for col, h in enumerate(headers, 2):
         ws_semi.cell(row=row, column=col, value=h)
     style_header_row(ws_semi, row, 8)
     row += 1
 
-    # Data - REVISED with block reuse and increased DAM migration
     semi_tasks = [
-        # Section: Discovery & Architecture
-        ("", "DISCOVERY & ARCHITECTURE", "", "", "", "", "", False),
-        ("1.1", "", "Site Audit & Content Inventory", "Medium", "10", "1 Architect", "Crawl all pages, map content types", False),
-        ("1.2", "", "DAM Audit & Asset Classification", "High", "8", "1 Architect + 1 Dev", "224GB DAM — classify active vs archive assets", False),
-        ("1.3", "", "Template & Block Mapping", "High", "6", "1 Architect", "Map AEM components → EDS blocks + library matches", False),
-        ("1.4", "", "Information Architecture Review", "Medium", "5", "1 Architect", "Navigation, URL strategy, redirects", False),
-        ("1.5", "", "Technical Architecture Design", "High", "8", "1 Architect + 1 Dev", "Integration points, search, i18n", False),
-        ("1.6", "", "Design System Extraction", "Medium", "5", "1 Designer", "Tokens, typography, spacing, colors", False),
-        ("1.7", "", "Migration Strategy Document", "Low", "3", "1 PM", "Phasing, risk mitigation, timelines", False),
-        ("", "", "Subtotal - Discovery", "", "45", "", "", False),
+        # Discovery
+        ("", "DISCOVERY & ARCHITECTURE", "", "", "", "", "", "section"),
+        ("1.1", "", "Site Audit — 31,603 pages across 9 regions", "High", "12", "1 Arch + 1 Dev", "Crawl all regions, map content trees", ""),
+        ("1.2", "", "DAM Audit — 229GB / 1.69M nodes classification", "High", "10", "1 Arch + 1 Dev", "Active vs archive, duplicate detection", ""),
+        ("1.3", "", "Component Mapping (643 → EDS blocks)", "High", "12", "1 Architect", "Map 132+ component types to 35-40 EDS blocks", ""),
+        ("1.4", "", "Template Mapping (44 WCM + 6 types → 8-10 EDS)", "High", "6", "1 Architect", "Simplify 50 templates to EDS model", ""),
+        ("1.5", "", "Integration Architecture (MySQL, Akamai, APIs)", "High", "10", "1 Arch + 1 Dev", "Externalization strategy for JDBC, NetStorage", "warning"),
+        ("1.6", "", "Admin UI Externalization Strategy (5 UIs)", "High", "6", "1 Architect", "PIM, privacy, terms, site-ia, taskmanagement", "warning"),
+        ("1.7", "", "Design System Extraction", "Medium", "5", "1 Designer", "Tokens, typography, spacing from 254 CSS files", ""),
+        ("1.8", "", "Migration Strategy & Phasing Document", "Medium", "5", "1 PM", "Region-by-region cutover plan", ""),
+        ("", "", "Subtotal - Discovery", "", "66", "", "", "total"),
 
-        # Section: Foundation & Setup
-        ("", "FOUNDATION & SETUP", "", "", "", "", "", False),
-        ("2.1", "", "EDS Project Scaffolding", "Low", "3", "1 Dev", "Repo setup, CI/CD, environments", False),
-        ("2.2", "", "Global Styles & Design Tokens", "Medium", "8", "1 Dev", "CSS variables, fonts, base styles from source", False),
-        ("2.3", "", "Header/Navigation Block (EXTEND)", "High", "10", "1 Dev", "Extend nav block — mega menu, multi-level", False),
-        ("2.4", "", "Footer Block (EXTEND)", "Medium", "4", "1 Dev", "Extend footer — multi-column, social, legal", False),
-        ("2.5", "", "Core Page Templates (7-9)", "High", "12", "1 Dev", "PLP, PDP, Blog, Landing, Corporate, etc.", False),
-        ("2.6", "", "i18n Framework Setup", "High", "10", "1 Dev", "4 locales: EN, KR, CN, JP", False),
-        ("2.7", "", "Search Infrastructure", "High", "8", "1 Dev", "Indexing, search UI, suggestions", False),
-        ("", "", "Subtotal - Foundation", "", "55", "", "", False),
+        # Foundation
+        ("", "FOUNDATION & SETUP", "", "", "", "", "", "section"),
+        ("2.1", "", "EDS Project Scaffolding", "Low", "3", "1 Dev", "Repo setup, CI/CD, environments", ""),
+        ("2.2", "", "Global Styles & Design Tokens (from 254 CSS files)", "High", "12", "1 Dev", "Extract from 582 JS / 254 CSS, create design system", ""),
+        ("2.3", "", "Header/Navigation Block (cm-semi-gnb)", "High", "12", "1 Dev", "Mega menu, 9 regions, responsive", ""),
+        ("2.4", "", "Footer Block (from cm-semi-gnb footer)", "Medium", "5", "1 Dev", "Multi-column, social, legal, regional variants", ""),
+        ("2.5", "", "Core Page Templates (8-10 from 44+6 WCM)", "High", "15", "1 Dev", "Product, content, article, event, static, marketing", ""),
+        ("2.6", "", "i18n Framework (4 locales × 9 regions)", "High", "12", "1 Dev", "en.json, ko_kr.json, ja_jp.json, zh_cn.json", ""),
+        ("2.7", "", "Search Infrastructure (from sr-semi-search-*)", "High", "10", "1 Dev", "Search grid, publications, suggestions", ""),
+        ("2.8", "", "Authentication/Login Framework (ev-semi-login)", "High", "8", "1 Dev", "User login, mypage, event registration", "warning"),
+        ("", "", "Subtotal - Foundation", "", "77", "", "", "total"),
 
-        # Section: Block Development — REUSE (Style Only)
-        ("", "BLOCK DEVELOPMENT — REUSE (Style Only, from AEM Block Library)", "", "", "", "", "", False),
-        ("3.1", "", "Hero/Banner Block (library + brand CSS)", "Low", "3", "1 Dev", "REUSE: Carousel, video, static variants", True),
-        ("3.2", "", "Cards Block (library + brand CSS)", "Low", "3", "1 Dev", "REUSE: Multiple card layout variants", True),
-        ("3.3", "", "Carousel/Slider Block (library + brand CSS)", "Low", "3", "1 Dev", "REUSE: Touch, responsive, accessible", True),
-        ("3.4", "", "Tabs Block (library + brand CSS)", "Low", "2", "1 Dev", "REUSE: Content tabs, accessible", True),
-        ("3.5", "", "Accordion Block (library + brand CSS)", "Low", "2", "1 Dev", "REUSE: FAQ expandable, accessible", True),
-        ("3.6", "", "Video Embed Block (library + brand CSS)", "Low", "2", "1 Dev", "REUSE: YouTube/custom player", True),
-        ("3.7", "", "Breadcrumb Block (library + brand CSS)", "Low", "1", "1 Dev", "REUSE: Auto-generated from nav", True),
-        ("3.8", "", "Call-to-Action Block (library + brand CSS)", "Low", "2", "1 Dev", "REUSE: Banner CTA variants", True),
-        ("3.9", "", "Columns/Grid Block (library + brand CSS)", "Low", "2", "1 Dev", "REUSE: Responsive grid layouts", True),
-        ("3.10", "", "Image Gallery Block (library + brand CSS)", "Low", "2", "1 Dev", "REUSE: Lightbox, grid layout", True),
-        ("", "", "Subtotal - Reuse Blocks (10 blocks)", "", "22", "", "Avg 2.2 days/block", False),
+        # Block Development - REUSE
+        ("", "BLOCK DEVELOPMENT — REUSE (AEM Block Library → brand CSS only)", "", "", "", "", "", "section"),
+        ("3.1", "", "Hero Block (from st-semi-hero, pd-semi-hero)", "Low", "3", "1 Dev", "REUSE: 2 source components → 1 block + variants", "reuse"),
+        ("3.2", "", "Cards Block (multiple variants)", "Low", "3", "1 Dev", "REUSE: Feature cards, product cards", "reuse"),
+        ("3.3", "", "Carousel Block (from st-semi carousel)", "Low", "3", "1 Dev", "REUSE: Content carousel, product carousel", "reuse"),
+        ("3.4", "", "Accordion Block (from st-semi accordion)", "Low", "2", "1 Dev", "REUSE: FAQ, expandable sections", "reuse"),
+        ("3.5", "", "Tabs Block", "Low", "2", "1 Dev", "REUSE: Content switching tabs", "reuse"),
+        ("3.6", "", "Video Embed Block", "Low", "2", "1 Dev", "REUSE: YouTube/custom player", "reuse"),
+        ("3.7", "", "Table Block (from st-semi table)", "Low", "2", "1 Dev", "REUSE: Data tables, responsive", "reuse"),
+        ("3.8", "", "Breadcrumb Block (from cm-semi breadcrumb)", "Low", "1", "1 Dev", "REUSE: Auto-generated from nav", "reuse"),
+        ("3.9", "", "CTA Block", "Low", "2", "1 Dev", "REUSE: Call-to-action banners", "reuse"),
+        ("3.10", "", "Columns/Grid Block", "Low", "2", "1 Dev", "REUSE: Layout grids", "reuse"),
+        ("3.11", "", "Image Gallery Block", "Low", "2", "1 Dev", "REUSE: Lightbox, grid layout", "reuse"),
+        ("3.12", "", "Feature-Benefit Block (from st-semi feature-benefit)", "Low", "3", "1 Dev", "REUSE: Product features display", "reuse"),
+        ("", "", "Subtotal - Reuse Blocks (12 blocks)", "", "27", "", "Avg 2.3 days/block (brand CSS only)", "total"),
 
-        # Section: Block Development — EXTEND (Customize)
-        ("", "BLOCK DEVELOPMENT — EXTEND (Library foundation + customization)", "", "", "", "", "", False),
-        ("3.11", "", "FAQ Accordion Block (extend w/ schema)", "Medium", "4", "1 Dev", "EXTEND: Add structured data, search", False),
-        ("3.12", "", "Contact Form Block (extend w/ multi-step)", "High", "8", "1 Dev", "EXTEND: Multi-step, validation, conditional", False),
-        ("3.13", "", "News/Blog Listing Block (extend w/ filters)", "Medium", "6", "1 Dev", "EXTEND: Add pagination, sorting, filters", False),
-        ("3.14", "", "Event Listing Block (extend w/ dates)", "Medium", "5", "1 Dev", "EXTEND: Date filters, card layout", False),
-        ("3.15", "", "Download/Resources Block (extend)", "Medium", "4", "1 Dev", "EXTEND: File downloads with filters", False),
-        ("3.16", "", "Related Content Block (extend)", "Medium", "4", "1 Dev", "EXTEND: Dynamic recommendations", False),
-        ("3.17", "", "Statistics/Counter Block (extend)", "Low", "3", "1 Dev", "EXTEND: Add animation, custom styling", False),
-        ("3.18", "", "Cookie Consent Integration (extend)", "Medium", "6", "1 Dev", "EXTEND: OneTrust integration + GDPR", False),
-        ("", "", "Subtotal - Extend Blocks (8 blocks)", "", "40", "", "Avg 5 days/block", False),
+        # Block Development - EXTEND
+        ("", "BLOCK DEVELOPMENT — EXTEND (Library + significant customization)", "", "", "", "", "", "section"),
+        ("3.13", "", "Contact Form Block (from cm-semi contactus)", "High", "10", "1 Dev", "EXTEND: Multi-step, regional variants, validation", ""),
+        ("3.14", "", "Article Grid Block (from ar-semi-article-grid)", "Medium", "6", "1 Dev", "EXTEND: Filters, pagination, sorting", ""),
+        ("3.15", "", "Event Calendar Block (from ar-semi event-calendar)", "High", "8", "1 Dev", "EXTEND: Calendar view, event filtering", ""),
+        ("3.16", "", "Popular News Block (from ar-semi popular-news)", "Medium", "5", "1 Dev", "EXTEND: Dynamic content, trending", ""),
+        ("3.17", "", "Download/Resources Block", "Medium", "5", "1 Dev", "EXTEND: File downloads with filters", ""),
+        ("3.18", "", "Cookie/Privacy Block (from cm-semi cookie)", "Medium", "6", "1 Dev", "EXTEND: OneTrust + Samsung privacy policy", ""),
+        ("3.19", "", "Hashtag/Tag Filter Block (from cm-semi hashtag)", "Medium", "5", "1 Dev", "EXTEND: Content tagging/filtering", ""),
+        ("3.20", "", "Related Resources Block (from pd-semi related-resources)", "Medium", "5", "1 Dev", "EXTEND: Dynamic content recommendations", ""),
+        ("3.21", "", "Subscription Block (from ev-semi subscription)", "Medium", "5", "1 Dev", "EXTEND: Newsletter, event signup", ""),
+        ("3.22", "", "LNB Block (from pd-semi-lnb)", "Medium", "4", "1 Dev", "EXTEND: Local navigation bar for products", ""),
+        ("", "", "Subtotal - Extend Blocks (10 blocks)", "", "59", "", "Avg 5.9 days/block", "total"),
 
-        # Section: Block Development — CUSTOM (New Build)
-        ("", "BLOCK DEVELOPMENT — CUSTOM (No library equivalent)", "", "", "", "", "", False),
-        ("3.19", "", "Product Specs Table Block", "High", "10", "1 Dev", "CUSTOM: Dynamic tables, responsive, filterable", False),
-        ("3.20", "", "Regional Contact Tabs Block", "Medium", "6", "1 Dev", "CUSTOM: Region-based content switching", False),
-        ("3.21", "", "Application Showcase Block", "Medium", "5", "1 Dev", "CUSTOM: AI, Server, Auto, Network cards", False),
-        ("3.22", "", "Foundry Services Block", "Medium", "5", "1 Dev", "CUSTOM: Process tech showcase", False),
-        ("3.23", "", "Partner/Logo Ecosystem Block (SAFE™)", "Low", "3", "1 Dev", "CUSTOM: Interactive partner grid", False),
-        ("3.24", "", "Sustainability Highlights Block", "Medium", "4", "1 Dev", "CUSTOM: Story cards, metrics display", False),
-        ("", "", "Subtotal - Custom Blocks (6 blocks)", "", "33", "", "Avg 5.5 days/block", False),
+        # Block Development - CUSTOM
+        ("", "BLOCK DEVELOPMENT — CUSTOM (No library equivalent, full build)", "", "", "", "", "", "section"),
+        ("3.23", "", "Product Spec Block (from pd-semi-spec)", "High", "12", "1 Dev", "CUSTOM: Dynamic spec tables, comparison", ""),
+        ("3.24", "", "Product Finder Block (from pd-semi product-finder)", "High", "15", "1 Dev", "CUSTOM: Filterable product catalog, interactive", "warning"),
+        ("3.25", "", "Job List/Detail Block (from cr-semi-job-*)", "High", "10", "1 Dev", "CUSTOM: Careers integration, search, apply", ""),
+        ("3.26", "", "Webinar Registration Block (from ev-semi webinar-regist)", "High", "8", "1 Dev", "CUSTOM: Registration flow, calendar integration", ""),
+        ("3.27", "", "Event Grid Block (from ar-semi event-grid)", "Medium", "6", "1 Dev", "CUSTOM: Events display with filters", ""),
+        ("3.28", "", "Search Publications Block (from sr-semi search-publications)", "Medium", "6", "1 Dev", "CUSTOM: Document/whitepaper search", ""),
+        ("3.29", "", "MyPage Block (from ev-semi-mypage)", "High", "10", "1 Dev", "CUSTOM: User dashboard, event history", "warning"),
+        ("3.30", "", "Searchjobs Block (from emea/searchjobs)", "Medium", "6", "1 Dev", "CUSTOM: Regional job search", ""),
+        ("3.31", "", "Regional Contact Tabs Block", "Medium", "5", "1 Dev", "CUSTOM: Region-based content switching", ""),
+        ("3.32", "", "Foundry Services Block", "Medium", "5", "1 Dev", "CUSTOM: Process technology showcase", ""),
+        ("3.33", "", "Application Showcase Block", "Medium", "5", "1 Dev", "CUSTOM: AI, Server, Auto, Network cards", ""),
+        ("", "", "Subtotal - Custom Blocks (11 blocks)", "", "88", "", "Avg 8 days/block", "total"),
 
-        ("", "", "TOTAL BLOCK DEVELOPMENT (24 blocks)", "", "95", "", "35% savings vs. full custom (was 147)", False),
+        ("", "", "TOTAL BLOCK DEVELOPMENT (33 blocks from 643 components)", "", "174", "", "643 components consolidated into 33 EDS blocks", "total"),
 
-        # Section: Content & Asset Migration — INCREASED due to DAM size
-        ("", "CONTENT & ASSET MIGRATION (DAM: 224.62 GB / 1.6M nodes)", "", "", "", "", "", False),
-        ("4.1", "", "Import Script Development", "High", "12", "1 Dev", "AEM Importer customization for Samsung", False),
-        ("4.2", "", "DAM Asset Audit & Cleanup", "High", "10", "1 Dev + 1 Content", "Identify active assets from 224GB, remove duplicates", False),
-        ("4.3", "", "Asset Migration — Phase 1 (Critical)", "High", "15", "1 Dev", "Product images, hero assets, logos (~50GB est.)", False),
-        ("4.4", "", "Asset Migration — Phase 2 (Supporting)", "Medium", "12", "1 Dev", "Blog images, event media, documents (~80GB est.)", False),
-        ("4.5", "", "Asset Optimization & CDN Setup", "High", "10", "1 Dev", "Format conversion, compression, CDN config", False),
-        ("4.6", "", "Content Migration - Products (50+ pages)", "High", "18", "1 Dev + 1 Content", "Automated + manual QA", False),
-        ("4.7", "", "Content Migration - Corporate (30+ pages)", "Medium", "8", "1 Content", "About, Sustainability, Careers", False),
-        ("4.8", "", "Content Migration - News/Blog (100+ pages)", "Medium", "12", "1 Dev + 1 Content", "Bulk import, metadata", False),
-        ("4.9", "", "Content Migration - Foundry (40+ pages)", "High", "12", "1 Dev + 1 Content", "Complex layouts", False),
-        ("4.10", "", "Content Migration - Support (20+ pages)", "Medium", "6", "1 Content", "Resources, tools", False),
-        ("4.11", "", "URL Redirect Mapping", "Medium", "8", "1 Dev", "301 redirects, SEO preservation", False),
-        ("4.12", "", "Metadata & SEO Migration", "Medium", "7", "1 Dev", "Schema, OG tags, sitemap", False),
-        ("", "", "Subtotal - Content & Asset Migration", "", "130", "", "Increased from 106 due to DAM size", False),
+        # External Services (NEW - from OSGi/integrations)
+        ("", "EXTERNAL SERVICES & API LAYER (OSGi bundle replacement)", "", "", "", "", "", "section"),
+        ("4.1", "", "MySQL REST API Service (replace JDBC connector)", "High", "20", "1 Backend Dev", "★ semi-apiservice externalization, REST endpoints", "warning"),
+        ("4.2", "", "Akamai/CDN Migration (replace NetStorageKit)", "High", "10", "1 DevOps", "★ Cloud Manager CDN or direct EDS delivery", "warning"),
+        ("4.3", "", "semi-common bundle functions → Edge/Serverless", "High", "15", "1 Dev", "★ 1.7MB core bundle → serverless functions", "warning"),
+        ("4.4", "", "semi-product API endpoints", "Medium", "8", "1 Dev", "Product data services", ""),
+        ("4.5", "", "semi-article API endpoints", "Medium", "6", "1 Dev", "Article/content services", ""),
+        ("4.6", "", "semi-gnb API endpoints (menu data)", "Medium", "5", "1 Dev", "Navigation data service", ""),
+        ("4.7", "", "PIM Admin UI (external SPA/headless)", "High", "15", "1 Dev", "★ Product info management app", "warning"),
+        ("4.8", "", "Privacy/Terms Admin UI (external)", "Medium", "8", "1 Dev", "Consent & policy management", ""),
+        ("4.9", "", "Site-IA & Task Management Admin (external)", "Medium", "8", "1 Dev", "IA management + task workflow", ""),
+        ("", "", "Subtotal - External Services", "", "95", "", "Replaces 6 OSGi bundles + 5 admin UIs", "total"),
 
-        # Section: Integrations
-        ("", "INTEGRATIONS", "", "", "", "", "", False),
-        ("5.1", "", "Search Integration (Algolia/Coveo)", "High", "10", "1 Dev", "Index, UI, suggestions", False),
-        ("5.2", "", "Analytics Setup (Adobe Analytics)", "Medium", "6", "1 Dev", "Event tracking, data layer", False),
-        ("5.3", "", "Form Submission Backend", "Medium", "5", "1 Dev", "API endpoints, notifications", False),
-        ("5.4", "", "CDN & Edge Configuration", "Medium", "4", "1 DevOps", "Caching, headers, security", False),
-        ("5.5", "", "SSO/Authentication (if needed)", "High", "7", "1 Dev", "B2B portal access", False),
-        ("", "", "Subtotal - Integrations", "", "32", "", "", False),
+        # Content Migration - SIGNIFICANTLY INCREASED
+        ("", "CONTENT & ASSET MIGRATION (31,603 pages + 229GB DAM)", "", "", "", "", "", "section"),
+        ("5.1", "", "Import Script Development (multi-region)", "High", "15", "1 Dev", "Region-aware importer for 9 regions", ""),
+        ("5.2", "", "DAM Audit & Cleanup (229GB)", "High", "12", "1 Dev + 1 Content", "Classify 1.69M nodes, remove duplicates/archive", ""),
+        ("5.3", "", "DAM Migration Phase 1 — Critical assets (~60GB)", "High", "15", "1 Dev", "Product images, heroes, logos, active media", ""),
+        ("5.4", "", "DAM Migration Phase 2 — Supporting assets (~80GB)", "Medium", "12", "1 Dev", "Blog images, event media, documents", ""),
+        ("5.5", "", "Asset Optimization & Format Conversion", "Medium", "8", "1 Dev", "WebP/AVIF conversion, compression, CDN setup", ""),
+        ("5.6", "", "Content Migration — global region (7,128 pages)", "High", "20", "1 Dev + 2 Content", "Master content + validation", ""),
+        ("5.7", "", "Content Migration — kr region (5,674 pages)", "High", "15", "1 Dev + 1 Content", "Korean locale content", ""),
+        ("5.8", "", "Content Migration — us region (5,351 pages)", "High", "15", "1 Dev + 1 Content", "US content + careers", ""),
+        ("5.9", "", "Content Migration — emea region (5,041 pages)", "High", "14", "1 Dev + 1 Content", "European content + searchjobs", ""),
+        ("5.10", "", "Content Migration — jp region (4,007 pages)", "Medium", "12", "1 Dev + 1 Content", "Japanese locale", ""),
+        ("5.11", "", "Content Migration — cn region (4,298 pages)", "Medium", "12", "1 Dev + 1 Content", "Chinese locale", ""),
+        ("5.12", "", "Content Migration — de/ssir/ds-test (104 pages)", "Low", "3", "1 Content", "Small regions", ""),
+        ("5.13", "", "URL Redirect Mapping (31,603 URLs)", "High", "12", "1 Dev", "Bulk 301 redirects, SEO preservation", ""),
+        ("5.14", "", "Metadata & SEO Migration", "Medium", "8", "1 Dev", "Schema, OG tags, sitemap for all regions", ""),
+        ("", "", "Subtotal - Content & Asset Migration", "", "173", "", "31,603 pages + 229GB assets", "total"),
 
-        # Section: Testing & QA
-        ("", "TESTING & QUALITY ASSURANCE", "", "", "", "", "", False),
-        ("6.1", "", "Performance Testing & Optimization", "High", "8", "1 Dev", "Lighthouse 95+, Core Web Vitals", False),
-        ("6.2", "", "Accessibility Testing (WCAG 2.1 AA)", "High", "8", "1 QA", "Screen readers, keyboard nav", False),
-        ("6.3", "", "Cross-browser/Device Testing", "Medium", "6", "1 QA", "Chrome, Safari, Firefox, Edge, mobile", False),
-        ("6.4", "", "Content QA (all locales)", "High", "12", "2 QA", "Visual regression, links, media", False),
-        ("6.5", "", "Asset Integrity Verification", "Medium", "5", "1 QA", "Verify migrated DAM assets render correctly", False),
-        ("6.6", "", "SEO Validation", "Medium", "4", "1 Dev", "Rankings preservation, crawl test", False),
-        ("6.7", "", "Security Testing", "Medium", "4", "1 DevOps", "Headers, CSP, vulnerability scan", False),
-        ("6.8", "", "UAT Support", "Medium", "8", "1 Dev + 1 QA", "Bug fixes, stakeholder feedback", False),
-        ("", "", "Subtotal - Testing & QA", "", "55", "", "", False),
+        # Integrations
+        ("", "INTEGRATIONS", "", "", "", "", "", "section"),
+        ("6.1", "", "Search Integration (replace sr-semi-search-*)", "High", "12", "1 Dev", "Algolia/Coveo indexing for 31K pages", ""),
+        ("6.2", "", "Analytics Setup (Adobe Analytics)", "Medium", "8", "1 Dev", "Event tracking, data layer, 9 regions", ""),
+        ("6.3", "", "Form Submission Backend", "Medium", "5", "1 Dev", "API endpoints, notifications", ""),
+        ("6.4", "", "CDN & Edge Configuration", "Medium", "5", "1 DevOps", "Caching, headers, security, replace Akamai", ""),
+        ("6.5", "", "Event/Webinar Platform Integration", "Medium", "6", "1 Dev", "Registration, calendar sync", ""),
+        ("", "", "Subtotal - Integrations", "", "36", "", "", "total"),
 
-        # Section: Launch & Handover
-        ("", "LAUNCH & HANDOVER", "", "", "", "", "", False),
-        ("7.1", "", "Go-Live Planning & Cutover", "High", "5", "1 PM + 1 Dev", "DNS, CDN switch, monitoring", False),
-        ("7.2", "", "Author Training & Documentation", "Medium", "6", "1 PM", "Content author guides", False),
-        ("7.3", "", "Developer Handover", "Medium", "4", "1 Dev", "Code docs, architecture guide", False),
-        ("7.4", "", "Post-Launch Hypercare (2 weeks)", "Medium", "10", "1 Dev", "Monitoring, hotfixes", False),
-        ("", "", "Subtotal - Launch & Handover", "", "25", "", "", False),
+        # Testing
+        ("", "TESTING & QUALITY ASSURANCE (9 regions × 4 locales)", "", "", "", "", "", "section"),
+        ("7.1", "", "Performance Testing & Optimization", "High", "10", "1 Dev", "Lighthouse 95+, Core Web Vitals all templates", ""),
+        ("7.2", "", "Accessibility Testing (WCAG 2.1 AA)", "High", "10", "1 QA", "All 33 blocks × accessibility", ""),
+        ("7.3", "", "Cross-browser/Device Testing", "Medium", "8", "1 QA", "Chrome, Safari, Firefox, Edge, mobile", ""),
+        ("7.4", "", "Content QA — Region-by-region (9 regions)", "High", "25", "2 QA", "Visual regression, links, media per region", ""),
+        ("7.5", "", "Asset Integrity Verification", "Medium", "6", "1 QA", "Verify migrated DAM assets render correctly", ""),
+        ("7.6", "", "SEO Validation (31K URLs)", "High", "8", "1 Dev", "Rankings preservation, crawl test, redirects", ""),
+        ("7.7", "", "Security Testing", "Medium", "5", "1 DevOps", "Headers, CSP, vulnerability scan", ""),
+        ("7.8", "", "Integration Testing (MySQL API, Search, Events)", "High", "8", "1 Dev", "End-to-end integration validation", ""),
+        ("7.9", "", "UAT Support (region-by-region cutover)", "High", "15", "1 Dev + 1 QA", "Staged: ssir/de → kr/jp → cn → us/emea → global", ""),
+        ("", "", "Subtotal - Testing & QA", "", "95", "", "9 regions × 4 locales matrix", "total"),
+
+        # Launch
+        ("", "LAUNCH & HANDOVER", "", "", "", "", "", "section"),
+        ("8.1", "", "Go-Live Planning — Staged Regional Cutover", "High", "8", "1 PM + 1 Dev", "ssir/de → kr/jp → cn → us/emea → global", ""),
+        ("8.2", "", "Author Training & Documentation", "Medium", "8", "1 PM", "EDS authoring guides for 4 locale teams", ""),
+        ("8.3", "", "Developer Handover", "Medium", "5", "1 Dev", "Code docs, architecture, API docs", ""),
+        ("8.4", "", "Post-Launch Hypercare (4 weeks - staged)", "High", "20", "1 Dev + 1 QA", "Region-by-region monitoring, hotfixes", ""),
+        ("", "", "Subtotal - Launch & Handover", "", "41", "", "", "total"),
 
         # Grand Total
-        ("", "GRAND TOTAL - SEMICONDUCTOR ONLY (REVISED)", "", "", "437", "", "~20-22 weeks with 4-5 FTEs", False),
+        ("", "GRAND TOTAL — SEMICONDUCTOR ONLY (REVISED v3.0)", "", "", "757", "", "~9-11 months with 5-7 FTEs", "total"),
     ]
 
     for i, task in enumerate(semi_tasks):
         for col, val in enumerate(task[:7], 2):
             ws_semi.cell(row=row, column=col, value=val)
 
-        is_section = task[0] == "" and task[1] != "" and task[2] == ""
-        is_subtotal = "Subtotal" in str(task[2]) or "GRAND TOTAL" in str(task[1]) or "TOTAL BLOCK" in str(task[2])
-        is_reuse = task[7] if len(task) > 7 else False
-        style_data_row(ws_semi, row, 8, is_alt=(i % 2 == 0), is_total=is_subtotal, is_section=is_section, is_reuse=is_reuse)
+        tag = task[7]
+        style_data_row(ws_semi, row, 8,
+                      is_alt=(i % 2 == 0),
+                      is_total=(tag == "total"),
+                      is_section=(tag == "section"),
+                      is_reuse=(tag == "reuse"),
+                      is_warning=(tag == "warning"))
         row += 1
 
     # ============================================================
-    # SHEET 3: Detailed Estimate - LED Website (REVISED)
+    # SHEET 3: LED Website (REVISED v3.0)
     # ============================================================
     ws_led = wb.create_sheet("LED Website - Detailed")
     ws_led.sheet_properties.tabColor = "00A86B"
@@ -447,11 +499,9 @@ def create_workbook():
         ws_led.column_dimensions[get_column_letter(i)].width = w
 
     row = 2
-    ws_led.cell(row=row, column=2, value="Samsung LED Website - Additional EDS Migration Effort (REVISED)").font = title_font
+    ws_led.cell(row=row, column=2, value="Samsung LED Website - Incremental Effort (REVISED v3.0)").font = title_font
     row += 1
-    ws_led.cell(row=row, column=2, value="Incremental effort when combined with Semiconductor migration").font = subtitle_font
-    row += 1
-    ws_led.cell(row=row, column=2, value="Additional DAM: ~4.55 GB (test folder — LED assets subset of samsung folder)").font = Font(name="Adobe Clean", size=10, italic=True, color=ADOBE_GRAY)
+    ws_led.cell(row=row, column=2, value="Incremental when combined with Semiconductor | Shares OSGi/Admin/DAM infrastructure").font = subtitle_font
     row += 2
 
     headers_led = ["#", "Work Stream", "Task", "Complexity", "Effort (Days)", "Resources", "Notes"]
@@ -461,83 +511,86 @@ def create_workbook():
     row += 1
 
     led_tasks = [
-        ("", "DISCOVERY (INCREMENTAL)", "", "", "", "", "", False),
-        ("L1.1", "", "LED Site Audit & Inventory", "Medium", "5", "1 Architect", "Product catalog, templates", False),
-        ("L1.2", "", "LED-specific Template Mapping", "Medium", "3", "1 Architect", "3 additional templates", False),
-        ("L1.3", "", "LED Navigation & IA Design", "Medium", "3", "1 Architect", "Separate nav structure", False),
-        ("", "", "Subtotal - Discovery", "", "11", "", "", False),
+        ("", "DISCOVERY (INCREMENTAL)", "", "", "", "", "", "section"),
+        ("L1.1", "", "LED Site Audit & Inventory (~80 pages)", "Medium", "5", "1 Architect", "Product catalog, 6 regions", ""),
+        ("L1.2", "", "LED Template & Block Mapping", "Medium", "3", "1 Architect", "3 additional templates", ""),
+        ("L1.3", "", "LED Navigation & IA Design", "Medium", "3", "1 Architect", "Separate nav structure", ""),
+        ("", "", "Subtotal - Discovery", "", "11", "", "", "total"),
 
-        ("", "LED BLOCKS — REUSE (Style Only)", "", "", "", "", "", False),
-        ("L2.1", "", "LED Product Category Block (reuse Cards)", "Low", "3", "1 Dev", "REUSE: Brand styling for Mid/High/CSP/COB", True),
-        ("L2.2", "", "LED Application Gallery Block (reuse Gallery)", "Low", "2", "1 Dev", "REUSE: Horticulture, automotive galleries", True),
-        ("L2.3", "", "Quick Downloads Block (reuse Resources)", "Low", "2", "1 Dev", "REUSE: Datasheet repository styling", True),
-        ("", "", "Subtotal - LED Reuse Blocks", "", "7", "", "Avg 2.3 days/block", False),
+        ("", "LED BLOCKS — REUSE (Style Only)", "", "", "", "", "", "section"),
+        ("L2.1", "", "LED Product Category Block (reuse Cards)", "Low", "3", "1 Dev", "REUSE: Mid/High/CSP/COB/Module cards", "reuse"),
+        ("L2.2", "", "LED Application Gallery (reuse Gallery)", "Low", "2", "1 Dev", "REUSE: Horticulture, automotive", "reuse"),
+        ("L2.3", "", "Quick Downloads Block (reuse Resources)", "Low", "2", "1 Dev", "REUSE: Datasheet repository", "reuse"),
+        ("", "", "Subtotal - LED Reuse Blocks", "", "7", "", "", "total"),
 
-        ("", "LED BLOCKS — EXTEND", "", "", "", "", "", False),
-        ("L2.4", "", "LED Spec Comparison Block (extend Table)", "Medium", "6", "1 Dev", "EXTEND: Multi-product comparison", False),
-        ("L2.5", "", "Automotive LED Showcase (extend Cards)", "Medium", "4", "1 Dev", "EXTEND: Application-specific display", False),
-        ("L2.6", "", "In-branding Program Block (extend)", "Low", "3", "1 Dev", "EXTEND: Partner program info", False),
-        ("", "", "Subtotal - LED Extend Blocks", "", "13", "", "Avg 4.3 days/block", False),
+        ("", "LED BLOCKS — EXTEND", "", "", "", "", "", "section"),
+        ("L2.4", "", "LED Spec Comparison Block", "Medium", "6", "1 Dev", "EXTEND: Multi-product comparison table", ""),
+        ("L2.5", "", "Automotive LED Showcase", "Medium", "4", "1 Dev", "EXTEND: Application-specific display", ""),
+        ("L2.6", "", "In-branding Program Block", "Low", "3", "1 Dev", "EXTEND: Partner program info", ""),
+        ("L2.7", "", "Sales Network Block", "Medium", "4", "1 Dev", "EXTEND: Regional sales contacts", ""),
+        ("", "", "Subtotal - LED Extend Blocks", "", "17", "", "", "total"),
 
-        ("", "LED BLOCKS — CUSTOM (No library equivalent)", "", "", "", "", "", False),
-        ("L2.7", "", "LED Component Calculator", "High", "12", "1 Dev", "CUSTOM: Interactive design calculator", False),
-        ("L2.8", "", "LED Engine Calculator", "High", "10", "1 Dev", "CUSTOM: Performance modeling tool", False),
-        ("L2.9", "", "LED Module Configurator", "High", "8", "1 Dev", "CUSTOM: Product selection wizard", False),
-        ("L2.10", "", "Virtual Exhibition Block", "High", "10", "1 Dev", "CUSTOM: Interactive virtual tour/3D", False),
-        ("", "", "Subtotal - LED Custom Blocks", "", "40", "", "Avg 10 days/block", False),
+        ("", "LED BLOCKS — CUSTOM", "", "", "", "", "", "section"),
+        ("L2.8", "", "LED Component Calculator", "High", "12", "1 Dev", "CUSTOM: Interactive design calculator", "warning"),
+        ("L2.9", "", "LED Engine Calculator", "High", "10", "1 Dev", "CUSTOM: Performance modeling tool", "warning"),
+        ("L2.10", "", "LED Module Configurator", "High", "8", "1 Dev", "CUSTOM: Product selection wizard", ""),
+        ("L2.11", "", "Virtual Exhibition Block", "High", "10", "1 Dev", "CUSTOM: Interactive virtual tour/3D", "warning"),
+        ("", "", "Subtotal - LED Custom Blocks", "", "40", "", "", "total"),
 
-        ("", "", "TOTAL LED BLOCK DEVELOPMENT (10 blocks)", "", "60", "", "Reduced from 72 with reuse strategy", False),
+        ("", "", "TOTAL LED BLOCK DEVELOPMENT (11 blocks)", "", "64", "", "", "total"),
 
-        ("", "LED CONTENT MIGRATION", "", "", "", "", "", False),
-        ("L3.1", "", "LED Import Script Customization", "Medium", "5", "1 Dev", "LED-specific parsers", False),
-        ("L3.2", "", "LED Product Pages (20+ pages)", "Medium", "8", "1 Dev + 1 Content", "All product lines", False),
-        ("L3.3", "", "LED Application Pages (10+ pages)", "Medium", "5", "1 Content", "Lighting, Auto, Display", False),
-        ("L3.4", "", "LED Support & Tools Pages", "Medium", "4", "1 Content", "Calculators, downloads", False),
-        ("L3.5", "", "LED News & Events Pages", "Low", "3", "1 Content", "Articles, event listings", False),
-        ("L3.6", "", "LED Asset Migration", "Medium", "4", "1 Dev", "Product images, datasheets", False),
-        ("L3.7", "", "LED URL Redirects", "Low", "3", "1 Dev", "led.samsung.com mapping", False),
-        ("", "", "Subtotal - Content Migration", "", "32", "", "", False),
+        ("", "LED CONTENT MIGRATION", "", "", "", "", "", "section"),
+        ("L3.1", "", "LED Import Script Customization", "Medium", "5", "1 Dev", "LED-specific parsers", ""),
+        ("L3.2", "", "LED Product Pages (20+ pages × 6 regions)", "Medium", "10", "1 Dev + 1 Content", "All product lines, regional variants", ""),
+        ("L3.3", "", "LED Application Pages (10+ pages)", "Medium", "5", "1 Content", "Lighting, Auto, Display", ""),
+        ("L3.4", "", "LED Support & Tools Pages", "Medium", "4", "1 Content", "Calculators, downloads", ""),
+        ("L3.5", "", "LED News & Events", "Low", "3", "1 Content", "Articles, exhibitions", ""),
+        ("L3.6", "", "LED Asset Migration", "Medium", "5", "1 Dev", "Product images, datasheets", ""),
+        ("L3.7", "", "LED URL Redirects", "Low", "3", "1 Dev", "led.samsung.com mapping", ""),
+        ("", "", "Subtotal - Content Migration", "", "35", "", "", "total"),
 
-        ("", "LED INTEGRATIONS & TESTING", "", "", "", "", "", False),
-        ("L4.1", "", "LED Regional Support (6 regions)", "High", "8", "1 Dev", "America, EMEA, CN, SEA, JP, KR", False),
-        ("L4.2", "", "LED Sales Network Integration", "Medium", "5", "1 Dev", "Regional sales contacts", False),
-        ("L4.3", "", "LED-specific Testing & QA", "Medium", "6", "1 QA", "Calculator validation, cross-browser", False),
-        ("L4.4", "", "LED Performance Optimization", "Medium", "4", "1 Dev", "Calculator load performance", False),
-        ("", "", "Subtotal - Integrations & Testing", "", "23", "", "", False),
+        ("", "LED INTEGRATIONS & TESTING", "", "", "", "", "", "section"),
+        ("L4.1", "", "LED Regional Support (6 regions)", "High", "8", "1 Dev", "America, EMEA, CN, SEA, JP, KR", ""),
+        ("L4.2", "", "LED Calculator Validation & Testing", "High", "8", "1 QA", "Calculator accuracy, cross-browser", ""),
+        ("L4.3", "", "LED Performance Optimization", "Medium", "4", "1 Dev", "Calculator load performance", ""),
+        ("L4.4", "", "LED Content QA (6 regions)", "Medium", "6", "1 QA", "Visual regression per region", ""),
+        ("", "", "Subtotal - Integrations & Testing", "", "26", "", "", "total"),
 
-        ("", "GRAND TOTAL - LED INCREMENTAL (REVISED)", "", "", "126", "", "~5-6 additional weeks", False),
+        ("", "GRAND TOTAL — LED INCREMENTAL (REVISED v3.0)", "", "", "136", "", "~5-6 additional weeks", "total"),
     ]
 
     for i, task in enumerate(led_tasks):
         for col, val in enumerate(task[:7], 2):
             ws_led.cell(row=row, column=col, value=val)
 
-        is_section = task[0] == "" and task[1] != "" and task[2] == ""
-        is_subtotal = "Subtotal" in str(task[2]) or "GRAND TOTAL" in str(task[1]) or "TOTAL LED" in str(task[2])
-        is_reuse = task[7] if len(task) > 7 else False
-        style_data_row(ws_led, row, 8, is_alt=(i % 2 == 0), is_total=is_subtotal, is_section=is_section, is_reuse=is_reuse)
+        tag = task[7]
+        style_data_row(ws_led, row, 8,
+                      is_alt=(i % 2 == 0),
+                      is_total=(tag == "total"),
+                      is_section=(tag == "section"),
+                      is_reuse=(tag == "reuse"),
+                      is_warning=(tag == "warning"))
         row += 1
 
     # ============================================================
-    # SHEET 4: Combined Summary (REVISED)
+    # SHEET 4: Combined Summary
     # ============================================================
     ws_combined = wb.create_sheet("Combined Summary")
     ws_combined.sheet_properties.tabColor = ADOBE_RED
 
     ws_combined.column_dimensions['A'].width = 5
-    ws_combined.column_dimensions['B'].width = 45
+    ws_combined.column_dimensions['B'].width = 50
     ws_combined.column_dimensions['C'].width = 20
     ws_combined.column_dimensions['D'].width = 20
     ws_combined.column_dimensions['E'].width = 20
     ws_combined.column_dimensions['F'].width = 20
 
     row = 2
-    ws_combined.cell(row=row, column=2, value="Migration Effort Summary — All Scenarios (REVISED v2.0)").font = title_font
+    ws_combined.cell(row=row, column=2, value="Migration Effort Summary — REVISED v3.0 (Samsung Internal Data)").font = title_font
     row += 1
-    ws_combined.cell(row=row, column=2, value="Optimized with AEM Block Library reuse | DAM: 229 GB").font = subtitle_font
+    ws_combined.cell(row=row, column=2, value="31,603 pages | 643 components | 229GB DAM | 9 regions | 6 OSGi bundles").font = subtitle_font
     row += 3
 
-    # Summary headers
     sum_headers = ["Work Stream", "Semi Only (Days)", "LED Incr. (Days)", "Combined (Days)", "Combined (Weeks)"]
     for col, h in enumerate(sum_headers, 2):
         ws_combined.cell(row=row, column=col, value=h)
@@ -545,15 +598,16 @@ def create_workbook():
     row += 1
 
     summary_data = [
-        ("Discovery & Architecture", "45", "11", "56", "2.5"),
-        ("Foundation & Setup", "55", "—", "55", "2.5"),
-        ("Block Development — Reuse (style only)", "22", "7", "29", "1.5"),
-        ("Block Development — Extend (customize)", "40", "13", "53", "2.5"),
-        ("Block Development — Custom (new build)", "33", "40", "73", "3.5"),
-        ("Content & Asset Migration", "130", "32", "162", "7.5"),
-        ("Integrations", "32", "13", "45", "2"),
-        ("Testing & QA", "55", "10", "65", "3"),
-        ("Launch & Handover", "25", "—", "25", "1"),
+        ("Discovery & Architecture", "66", "11", "77", "3.5"),
+        ("Foundation & Setup", "77", "—", "77", "3.5"),
+        ("Block Development — Reuse (style only)", "27", "7", "34", "1.5"),
+        ("Block Development — Extend (customize)", "59", "17", "76", "3.5"),
+        ("Block Development — Custom (new build)", "88", "40", "128", "6"),
+        ("External Services & API Layer (OSGi replacement)", "95", "—", "95", "4.5"),
+        ("Content & Asset Migration (31K pages + 229GB)", "173", "35", "208", "9.5"),
+        ("Integrations", "36", "—", "36", "1.5"),
+        ("Testing & QA (9 regions × 4 locales)", "95", "26", "121", "5.5"),
+        ("Launch & Handover (staged regional cutover)", "41", "—", "41", "2"),
     ]
 
     for i, (stream, semi, led, combined, weeks) in enumerate(summary_data):
@@ -566,11 +620,10 @@ def create_workbook():
         style_data_row(ws_combined, row, 6, is_alt=(i % 2 == 0), is_reuse=is_reuse)
         row += 1
 
-    # Totals
     totals = [
-        ("TOTAL - Semiconductor Only (Revised)", "437", "—", "437", "~20-22"),
-        ("TOTAL - LED Incremental (Revised)", "—", "126", "126", "~5-6"),
-        ("TOTAL - Combined Semi + LED (Revised)", "437", "126", "563", "~24-28"),
+        ("TOTAL — Semiconductor Only", "757", "—", "757", "~9-11 months"),
+        ("TOTAL — LED Incremental", "—", "136", "136", "~5-6 weeks"),
+        ("TOTAL — Combined (Semi + LED)", "757", "136", "893", "~11-14 months"),
     ]
 
     for label, semi, led, combined, weeks in totals:
@@ -582,37 +635,39 @@ def create_workbook():
         style_data_row(ws_combined, row, 6, is_total=True)
         row += 1
 
-    # Comparison with original
+    # Version comparison
     row += 2
-    ws_combined.cell(row=row, column=2, value="SAVINGS vs. ORIGINAL ESTIMATE (Full Custom Development)").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_GREEN)
+    ws_combined.cell(row=row, column=2, value="ESTIMATE EVOLUTION — Why this differs from initial assessment").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
     row += 2
 
-    savings_headers = ["Scenario", "Original (Days)", "Revised (Days)", "Savings (Days)", "Savings (%)"]
-    for col, h in enumerate(savings_headers, 2):
+    evo_headers = ["Metric", "Initial (Web crawl)", "Samsung Actual", "Impact"]
+    for col, h in enumerate(evo_headers, 2):
         ws_combined.cell(row=row, column=col, value=h)
-    style_header_row(ws_combined, row, 6)
+    style_header_row(ws_combined, row, 5)
     row += 1
 
-    savings_data = [
-        ("Semiconductor Only", "485", "437", "48", "~10%"),
-        ("LED Incremental", "152", "126", "26", "~17%"),
-        ("Combined", "637", "563", "74", "~12%"),
+    evolution = [
+        ("Total Pages", "350-500 (estimated)", "31,603 (confirmed)", "90x more pages → content migration 3x effort"),
+        ("Components", "25-35 blocks", "643 nodes / 132+ types", "Must consolidate 643→33 EDS blocks"),
+        ("Regions", "4 assumed", "9 confirmed", "2.25x validation/testing matrix"),
+        ("Templates", "7-9 estimated", "44 WCM + 6 types", "Complex template consolidation effort"),
+        ("OSGi Bundles", "Not assessed", "6 custom + 3 third-party", "NEW: API externalization layer needed"),
+        ("Admin UIs", "Not assessed", "5 custom UIs", "NEW: Separate headless admin apps"),
+        ("External DB", "Not assessed", "MySQL direct JDBC", "NEW: REST microservice required"),
+        ("CDN/Storage", "Not assessed", "Akamai NetStorageKit", "NEW: CDN migration/replacement"),
     ]
 
-    for i, (scenario, orig, revised, saved, pct) in enumerate(savings_data):
-        ws_combined.cell(row=row, column=2, value=scenario)
-        ws_combined.cell(row=row, column=3, value=orig)
-        ws_combined.cell(row=row, column=4, value=revised)
-        ws_combined.cell(row=row, column=5, value=saved)
-        ws_combined.cell(row=row, column=6, value=pct)
-        style_data_row(ws_combined, row, 6, is_alt=(i % 2 == 0))
+    for i, (metric, initial, actual, impact) in enumerate(evolution):
+        ws_combined.cell(row=row, column=2, value=metric)
+        ws_combined.cell(row=row, column=3, value=initial)
+        ws_combined.cell(row=row, column=4, value=actual)
+        ws_combined.cell(row=row, column=5, value=impact)
+        style_data_row(ws_combined, row, 5, is_alt=(i % 2 == 0), is_warning=(i >= 4))
         row += 1
 
-    row += 1
-    ws_combined.cell(row=row, column=2, value="Note: Block development reduced 35% (147→95 for Semi, 72→60 for LED). Asset migration increased due to 229GB DAM.").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_GRAY)
-
+    # Cost
     row += 3
-    ws_combined.cell(row=row, column=2, value="COST ESTIMATION (Based on Adobe Professional Services Rates) — REVISED").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
+    ws_combined.cell(row=row, column=2, value="COST ESTIMATION (Based on Adobe Professional Services Rates) — REVISED v3.0").font = Font(name="Adobe Clean", size=12, bold=True, color=ADOBE_RED)
     row += 2
 
     cost_headers = ["Scenario", "Person-Days", "Team Size", "Duration", "Est. Cost Range (USD)"]
@@ -622,9 +677,9 @@ def create_workbook():
     row += 1
 
     cost_data = [
-        ("Semiconductor Only", "437", "4-5 FTEs", "18-22 weeks", "$760K - $960K"),
-        ("LED Only (standalone*)", "255", "3-4 FTEs", "12-16 weeks", "$445K - $560K"),
-        ("Combined (Semi + LED)", "563", "5-6 FTEs", "24-28 weeks", "$985K - $1.24M"),
+        ("Semiconductor Only", "757", "5-7 FTEs", "9-11 months", "$1.32M - $1.67M"),
+        ("LED Only (standalone*)", "420", "3-4 FTEs", "6-8 months", "$735K - $925K"),
+        ("Combined (Semi + LED)", "893", "6-8 FTEs", "11-14 months", "$1.56M - $1.96M"),
     ]
 
     for i, (scenario, days, team, duration, cost) in enumerate(cost_data):
@@ -637,114 +692,62 @@ def create_workbook():
         row += 1
 
     row += 2
-    ws_combined.cell(row=row, column=2, value="* LED standalone includes shared foundation effort absorbed in combined scenario").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_GRAY)
+    ws_combined.cell(row=row, column=2, value="* LED standalone includes shared foundation/API effort absorbed in combined scenario").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_GRAY)
     row += 1
-    ws_combined.cell(row=row, column=2, value="Cost estimates based on blended rate of $1,750-$2,200/day for Adobe Professional Services").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_GRAY)
+    ws_combined.cell(row=row, column=2, value="Cost based on blended rate of $1,750-$2,200/day for Adobe Professional Services").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_GRAY)
     row += 1
-    ws_combined.cell(row=row, column=2, value="Combined approach saves ~$160K-$250K vs. separate projects due to shared foundation & design system").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_GREEN)
+    ws_combined.cell(row=row, column=2, value="Samsung's own assessment: Large category, 9-12 months (aligns with our Semiconductor-only estimate)").font = Font(name="Adobe Clean", size=9, italic=True, color=ADOBE_BLUE)
 
     # ============================================================
-    # SHEET 5: Block Reuse Analysis (NEW SHEET)
+    # SHEET 5: Risk Register (REVISED with Samsung data)
     # ============================================================
-    ws_reuse = wb.create_sheet("Block Reuse Analysis")
-    ws_reuse.sheet_properties.tabColor = ADOBE_GREEN
+    ws_risk = wb.create_sheet("Risk Register")
+    ws_risk.sheet_properties.tabColor = "FF6600"
 
-    ws_reuse.column_dimensions['A'].width = 5
-    ws_reuse.column_dimensions['B'].width = 35
-    ws_reuse.column_dimensions['C'].width = 15
-    ws_reuse.column_dimensions['D'].width = 15
-    ws_reuse.column_dimensions['E'].width = 15
-    ws_reuse.column_dimensions['F'].width = 40
-    ws_reuse.column_dimensions['G'].width = 35
+    ws_risk.column_dimensions['A'].width = 5
+    ws_risk.column_dimensions['B'].width = 8
+    ws_risk.column_dimensions['C'].width = 45
+    ws_risk.column_dimensions['D'].width = 12
+    ws_risk.column_dimensions['E'].width = 12
+    ws_risk.column_dimensions['F'].width = 55
+    ws_risk.column_dimensions['G'].width = 20
 
     row = 2
-    ws_reuse.cell(row=row, column=2, value="Block Reuse Analysis — AEM Block Library / Block Party / Boilerplate").font = title_font
-    row += 2
-    ws_reuse.cell(row=row, column=2, value="Blocks categorized by reuse tier to optimize development effort").font = subtitle_font
+    ws_risk.cell(row=row, column=2, value="Risk Register (Revised v3.0 — from Samsung analysis)").font = title_font
     row += 3
 
-    reuse_headers = ["Block Name", "Tier", "Original (Days)", "Revised (Days)", "Library Source", "Customization Required"]
-    for col, h in enumerate(reuse_headers, 2):
-        ws_reuse.cell(row=row, column=col, value=h)
-    style_header_row(ws_reuse, row, 7)
+    risk_headers = ["ID", "Risk Description", "Likelihood", "Impact", "Mitigation Strategy", "Owner"]
+    for col, h in enumerate(risk_headers, 2):
+        ws_risk.cell(row=row, column=col, value=h)
+    style_header_row(ws_risk, row, 7)
     row += 1
 
-    reuse_blocks = [
-        # REUSE blocks
-        ("Hero/Banner", "REUSE", "8", "3", "Block Collection", "Brand CSS, Samsung typography"),
-        ("Cards", "REUSE", "6", "3", "Block Collection", "Brand CSS, card variants"),
-        ("Carousel/Slider", "REUSE", "6", "3", "Block Collection", "Brand CSS, touch behavior"),
-        ("Tabs", "REUSE", "5", "2", "Block Collection", "Brand CSS only"),
-        ("Accordion", "REUSE", "4", "2", "EDS Boilerplate", "Brand CSS, Samsung styling"),
-        ("Video Embed", "REUSE", "5", "2", "Block Collection", "Brand CSS, player skin"),
-        ("Breadcrumb", "REUSE", "2", "1", "Block Collection", "Minimal styling"),
-        ("Call-to-Action", "REUSE", "3", "2", "Block Collection", "Brand colors, hover states"),
-        ("Columns/Grid", "REUSE", "—", "2", "EDS Boilerplate", "Responsive breakpoints"),
-        ("Image Gallery", "REUSE", "5", "2", "Block Collection", "Lightbox, Samsung styling"),
-        # EXTEND blocks
-        ("FAQ (with schema)", "EXTEND", "4", "4", "Block Collection + custom", "Add structured data, search integration"),
-        ("Contact Form (multi-step)", "EXTEND", "12", "8", "Block Collection + custom", "Multi-step wizard, conditional fields"),
-        ("News/Blog Listing", "EXTEND", "10", "6", "Block Collection + custom", "Add filters, pagination, sorting"),
-        ("Event Listing", "EXTEND", "6", "5", "Block Collection + custom", "Date filtering, card layout"),
-        ("Downloads/Resources", "EXTEND", "5", "4", "Block Collection + custom", "Category filters, file types"),
-        ("Related Content", "EXTEND", "5", "4", "Block Collection + custom", "Dynamic content logic"),
-        ("Statistics/Counter", "EXTEND", "3", "3", "Block Collection + custom", "Custom animations"),
-        ("Cookie Consent", "EXTEND", "8", "6", "OneTrust SDK", "Samsung privacy requirements"),
-        # CUSTOM blocks
-        ("Product Specs Table", "CUSTOM", "10", "10", "None — full build", "Dynamic data, responsive, filterable"),
-        ("Regional Contact Tabs", "CUSTOM", "5", "6", "None — full build", "Region switching, dynamic data"),
-        ("Application Showcase", "CUSTOM", "5", "5", "None — full build", "Category-specific layouts"),
-        ("Foundry Services", "CUSTOM", "6", "5", "None — full build", "Process technology display"),
-        ("Partner/Logo Ecosystem", "CUSTOM", "3", "3", "None — full build", "SAFE™ partner interactions"),
-        ("Sustainability Highlights", "CUSTOM", "5", "4", "None — full build", "Metrics + story cards"),
+    risks = [
+        ("R1", "MySQL direct JDBC → Cloud/EDS has no JDBC support", "Confirmed", "High", "Externalize to REST microservice; AEM uses API calls only", "Backend Dev"),
+        ("R2", "DAM 224GB single tree (98%) — migration throughput", "High", "High", "CTT chunk split + top-up rounds; pre-cleanup unused assets", "DevOps"),
+        ("R3", "Akamai NetStorageKit dependency", "Confirmed", "High", "Migrate to Cloud Manager CDN or EDS native delivery", "DevOps"),
+        ("R4", "5 Custom Admin UIs (PIM, privacy, terms, site-ia, tasks)", "Confirmed", "High", "Granite/Coral UI audit; externalize as SPA or headless apps", "Architect"),
+        ("R5", "9 regions × 4 locales simultaneous operation", "Confirmed", "High", "Region-by-region cutover; automated validation (Playwright)", "PM"),
+        ("R6", "31,603 pages content migration volume", "Confirmed", "High", "Automated import scripts per region; parallel processing", "Content Eng"),
+        ("R7", "semi-common 1.7MB core bundle → externalization", "High", "High", "Priority #1 refactoring; AEM Cloud SDK API compatibility matrix", "Tech Lead"),
+        ("R8", "643 components consolidated to 33 EDS blocks", "Medium", "High", "POC key blocks in Phase 1; validate mapping assumptions early", "Architect"),
+        ("R9", "44 WCM templates + 6 types → 8-10 EDS templates", "Medium", "Medium", "Template consolidation workshop; validate with content teams", "Architect"),
+        ("R10", "JSP 9 remaining (admin/taskmanagement)", "Confirmed", "Low", "HTL conversion (small scope) or externalize to admin SPA", "Dev"),
+        ("R11", "DAM 1.69M nodes / 8.8M props — index performance", "Medium", "Medium", "Oak Index redesign; metadata cleanup before migration", "DevOps"),
+        ("R12", "LED calculator tools complexity", "Medium", "High", "Dedicated spike/POC; third-party widget as fallback", "Tech Lead"),
+        ("R13", "SEO ranking impact — 31,603 URL redirects", "High", "High", "Comprehensive redirect map; staged rollout; 90-day monitoring", "SEO"),
+        ("R14", "Repository structure not modernized (ui.apps/ui.content)", "Confirmed", "Medium", "Apply Repository Modernizer before migration", "Dev"),
     ]
 
-    for i, (block, tier, orig, revised, source, customization) in enumerate(reuse_blocks):
-        ws_reuse.cell(row=row, column=2, value=block)
-        ws_reuse.cell(row=row, column=3, value=tier)
-        ws_reuse.cell(row=row, column=4, value=orig)
-        ws_reuse.cell(row=row, column=5, value=revised)
-        ws_reuse.cell(row=row, column=6, value=source)
-        ws_reuse.cell(row=row, column=7, value=customization)
-        is_reuse = tier == "REUSE"
-        style_data_row(ws_reuse, row, 7, is_alt=(i % 2 == 0), is_reuse=is_reuse)
-        # Color the tier cell
-        tier_cell = ws_reuse.cell(row=row, column=3)
-        if tier == "REUSE":
-            tier_cell.font = Font(name="Adobe Clean", size=10, bold=True, color=ADOBE_GREEN)
-        elif tier == "EXTEND":
-            tier_cell.font = Font(name="Adobe Clean", size=10, bold=True, color=ADOBE_BLUE)
-        elif tier == "CUSTOM":
-            tier_cell.font = Font(name="Adobe Clean", size=10, bold=True, color=ADOBE_RED)
-        row += 1
-
-    # Summary at bottom
-    row += 2
-    summary_items = [
-        ("REUSE (10 blocks)", "44 → 22 days", "50% savings", "Only brand CSS customization needed"),
-        ("EXTEND (8 blocks)", "53 → 40 days", "25% savings", "Library foundation + logic modifications"),
-        ("CUSTOM (6 blocks)", "34 → 33 days", "~3% savings", "Full development required — no library equivalent"),
-        ("TOTAL (24 blocks)", "147 → 95 days", "35% savings", ""),
-    ]
-
-    ws_reuse.cell(row=row, column=2, value="Tier").font = header_font
-    ws_reuse.cell(row=row, column=3, value="Effort Change").font = header_font
-    ws_reuse.cell(row=row, column=4, value="Savings").font = header_font
-    ws_reuse.cell(row=row, column=5, value="").font = header_font
-    ws_reuse.cell(row=row, column=6, value="Rationale").font = header_font
-    for col in range(2, 7):
-        ws_reuse.cell(row=row, column=col).fill = header_fill
-        ws_reuse.cell(row=row, column=col).border = thin_border
-        ws_reuse.cell(row=row, column=col).alignment = center_align
-    row += 1
-
-    for i, (tier, change, savings, rationale) in enumerate(summary_items):
-        ws_reuse.cell(row=row, column=2, value=tier)
-        ws_reuse.cell(row=row, column=3, value=change)
-        ws_reuse.cell(row=row, column=4, value=savings)
-        ws_reuse.cell(row=row, column=6, value=rationale)
-        is_t = (i == len(summary_items) - 1)
-        style_data_row(ws_reuse, row, 7, is_total=is_t, is_alt=(i % 2 == 0))
+    for i, (rid, desc, like, impact, mitigation, owner) in enumerate(risks):
+        ws_risk.cell(row=row, column=2, value=rid)
+        ws_risk.cell(row=row, column=3, value=desc)
+        ws_risk.cell(row=row, column=4, value=like)
+        ws_risk.cell(row=row, column=5, value=impact)
+        ws_risk.cell(row=row, column=6, value=mitigation)
+        ws_risk.cell(row=row, column=7, value=owner)
+        is_warn = like == "Confirmed"
+        style_data_row(ws_risk, row, 7, is_alt=(i % 2 == 0), is_warning=is_warn)
         row += 1
 
     # ============================================================
@@ -755,12 +758,12 @@ def create_workbook():
 
     ws_resource.column_dimensions['A'].width = 5
     ws_resource.column_dimensions['B'].width = 25
-    ws_resource.column_dimensions['C'].width = 15
-    ws_resource.column_dimensions['D'].width = 50
-    ws_resource.column_dimensions['E'].width = 20
+    ws_resource.column_dimensions['C'].width = 12
+    ws_resource.column_dimensions['D'].width = 55
+    ws_resource.column_dimensions['E'].width = 22
 
     row = 2
-    ws_resource.cell(row=row, column=2, value="Recommended Team Structure (Revised)").font = title_font
+    ws_resource.cell(row=row, column=2, value="Recommended Team Structure (Combined Semi + LED)").font = title_font
     row += 3
 
     res_headers = ["Role", "Count", "Responsibilities", "Duration"]
@@ -770,14 +773,15 @@ def create_workbook():
     row += 1
 
     resources = [
-        ("Solution Architect", "1", "Architecture design, block library mapping, DAM strategy, oversight", "Full duration"),
-        ("Senior EDS Developer", "2", "Block development (extend/custom), integrations, performance", "Full duration"),
-        ("Frontend Developer", "1", "Block styling (reuse tier), responsive design, accessibility", "Weeks 3-20"),
-        ("Content/DAM Engineer", "1", "DAM audit, asset migration (229GB), import scripts, content QA", "Weeks 6-22"),
-        ("QA Engineer", "1", "Testing, accessibility audit, cross-browser, asset verification", "Weeks 12-24"),
-        ("Project Manager", "1", "Planning, coordination, stakeholder management, training", "Full duration"),
-        ("UX Designer", "0.5", "Design system extraction, component design review", "Weeks 1-6"),
-        ("DevOps Engineer", "0.5", "CDN config, CI/CD, security, DAM migration tooling", "Weeks 2-6, 18-24"),
+        ("Solution Architect", "1", "Component mapping (643→33), template strategy, integration architecture", "Full duration"),
+        ("Senior EDS Developer", "2", "Block development (extend/custom), EDS patterns, performance", "Full duration"),
+        ("Backend Developer", "1", "MySQL API service, OSGi externalization, serverless functions", "Months 2-8"),
+        ("Frontend Developer", "1-2", "Block styling (reuse tier), 254 CSS migration, responsive, a11y", "Months 2-10"),
+        ("Content/DAM Engineer", "1-2", "DAM audit (229GB), 31K page migration, import scripts, per-region QA", "Months 4-12"),
+        ("QA Engineer", "1-2", "9-region testing, accessibility, cross-browser, integration tests", "Months 6-14"),
+        ("Project Manager", "1", "Region cutover planning, stakeholder coordination, training", "Full duration"),
+        ("UX Designer", "0.5", "Design system extraction from 582 JS / 254 CSS", "Months 1-3"),
+        ("DevOps Engineer", "1", "CDN migration, Akamai replacement, CI/CD, DAM migration tooling", "Months 2-6, 10-14"),
     ]
 
     for i, (role, count, resp, duration) in enumerate(resources):
@@ -788,122 +792,75 @@ def create_workbook():
         style_data_row(ws_resource, row, 5, is_alt=(i % 2 == 0))
         row += 1
 
-    # ============================================================
-    # SHEET 7: Risk Register
-    # ============================================================
-    ws_risk = wb.create_sheet("Risk Register")
-    ws_risk.sheet_properties.tabColor = "FF6600"
-
-    ws_risk.column_dimensions['A'].width = 5
-    ws_risk.column_dimensions['B'].width = 8
-    ws_risk.column_dimensions['C'].width = 40
-    ws_risk.column_dimensions['D'].width = 12
-    ws_risk.column_dimensions['E'].width = 12
-    ws_risk.column_dimensions['F'].width = 50
-    ws_risk.column_dimensions['G'].width = 20
-
-    row = 2
-    ws_risk.cell(row=row, column=2, value="Risk Register (Revised)").font = title_font
     row += 3
-
-    risk_headers = ["ID", "Risk Description", "Likelihood", "Impact", "Mitigation Strategy", "Owner"]
-    for col, h in enumerate(risk_headers, 2):
-        ws_risk.cell(row=row, column=col, value=h)
-    style_header_row(ws_risk, row, 7)
+    ws_resource.cell(row=row, column=2, value="Total Team: 6-8 FTEs at peak (months 4-10)").font = total_font
     row += 1
-
-    risks = [
-        ("R1", "DAM size (229GB) contains significant archival/unused assets", "High", "Medium", "DAM audit in Phase 1; classify active vs archive; migrate only active assets", "Content Engineer"),
-        ("R2", "Asset migration throughput — 224GB transfer time exceeds estimate", "Medium", "High", "Phased migration; parallel transfer; compress before migrating; CDN pre-warm", "DevOps"),
-        ("R3", "Block Library blocks don't match Samsung's exact UX patterns", "Medium", "Medium", "POC in Phase 1 for 2-3 key blocks; budget buffer for Extend tier blocks", "Tech Lead"),
-        ("R4", "LED Calculator tools exceed complexity estimates", "Medium", "High", "Dedicated spike/POC in Phase 1; consider third-party widget as fallback", "Tech Lead"),
-        ("R5", "Content volume larger than estimated (hidden/unpublished pages)", "High", "Medium", "Automated crawl + JCR query in discovery; 20% buffer for content migration", "Architect"),
-        ("R6", "Multi-language content sync issues", "Medium", "High", "Establish i18n workflow early; test with 2 locales first before full rollout", "Architect"),
-        ("R7", "Performance regression on asset-heavy pages", "Medium", "High", "Image optimization pipeline; lazy loading; Lighthouse monitoring per sprint", "Dev Lead"),
-        ("R8", "SEO ranking impact during migration", "Medium", "High", "Comprehensive redirect map; staged rollout; 90-day monitoring period", "SEO Specialist"),
-        ("R9", "AEM On-Prem content export/access challenges", "Medium", "Medium", "Early access to AEM instance; JCR export tools; backup VLT strategy", "Dev Lead"),
-        ("R10", "Stakeholder availability for UAT", "High", "Medium", "Schedule UAT windows early; provide async review tools; staged sign-off", "PM"),
-        ("R11", "DAM node count (1.69M) causes import script performance issues", "Medium", "Medium", "Batch processing; parallel import workers; incremental sync approach", "Content Engineer"),
-    ]
-
-    for i, (rid, desc, like, impact, mitigation, owner) in enumerate(risks):
-        ws_risk.cell(row=row, column=2, value=rid)
-        ws_risk.cell(row=row, column=3, value=desc)
-        ws_risk.cell(row=row, column=4, value=like)
-        ws_risk.cell(row=row, column=5, value=impact)
-        ws_risk.cell(row=row, column=6, value=mitigation)
-        ws_risk.cell(row=row, column=7, value=owner)
-        style_data_row(ws_risk, row, 7, is_alt=(i % 2 == 0))
-        row += 1
+    ws_resource.cell(row=row, column=2, value="Ramp: Start with 4, scale to 8 at month 4, taper to 4 from month 10").font = body_font
 
     # ============================================================
-    # SHEET 8: Timeline (Revised)
+    # SHEET 7: Timeline
     # ============================================================
     ws_timeline = wb.create_sheet("Timeline")
     ws_timeline.sheet_properties.tabColor = "9B59B6"
 
     ws_timeline.column_dimensions['A'].width = 5
-    ws_timeline.column_dimensions['B'].width = 35
-    for i in range(3, 32):
-        ws_timeline.column_dimensions[get_column_letter(i)].width = 4
+    ws_timeline.column_dimensions['B'].width = 40
+    for i in range(3, 60):
+        ws_timeline.column_dimensions[get_column_letter(i)].width = 3
 
     row = 2
-    ws_timeline.cell(row=row, column=2, value="Project Timeline — Combined Semi + LED (REVISED)").font = title_font
+    ws_timeline.cell(row=row, column=2, value="Project Timeline — Combined (REVISED v3.0)").font = title_font
     row += 1
-    ws_timeline.cell(row=row, column=2, value="24-28 weeks (reduced from 28-32 with block reuse)").font = subtitle_font
+    ws_timeline.cell(row=row, column=2, value="11-14 months | Staged regional cutover").font = subtitle_font
     row += 2
 
-    # Week headers
+    # Month headers (14 months)
     ws_timeline.cell(row=row, column=2, value="Phase / Activity")
-    for w in range(1, 29):
-        ws_timeline.cell(row=row, column=w + 2, value=f"W{w}")
-    style_header_row(ws_timeline, row, 30)
+    months = ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10", "M11", "M12", "M13", "M14"]
+    for m_idx, m in enumerate(months):
+        ws_timeline.cell(row=row, column=m_idx + 3, value=m)
+    style_header_row(ws_timeline, row, 16)
     row += 1
 
-    # Timeline data (phase, start_week, end_week)
     phases = [
-        ("Phase 1: Discovery & DAM Audit", 1, 4),
-        ("Phase 2: Foundation & Setup", 3, 6),
-        ("Phase 3a: Block Reuse (style only)", 5, 7),
-        ("Phase 3b: Block Extend (customize)", 6, 10),
-        ("Phase 3c: Block Custom (Semi)", 8, 14),
-        ("Phase 3d: Block Custom (LED)", 12, 18),
-        ("Phase 4a: DAM/Asset Migration", 8, 16),
-        ("Phase 4b: Content Migration", 10, 18),
-        ("Phase 5: Integrations", 12, 16),
-        ("Phase 6: Testing & QA", 16, 22),
-        ("Phase 7: UAT & Launch Prep", 20, 24),
-        ("Phase 8: Go-Live & Hypercare", 24, 28),
+        ("Phase 1: Discovery & Architecture", 1, 2),
+        ("Phase 2: Foundation & Setup", 2, 4),
+        ("Phase 3a: Block Reuse (style only)", 3, 4),
+        ("Phase 3b: Block Extend (customize)", 3, 6),
+        ("Phase 3c: Block Custom (Semi + LED)", 4, 9),
+        ("Phase 4: External Services / API Layer", 3, 8),
+        ("Phase 5a: DAM Audit & Asset Migration", 4, 8),
+        ("Phase 5b: Content Migration (31K pages)", 5, 11),
+        ("Phase 6: Integrations", 6, 8),
+        ("Phase 7: Testing & QA (per region)", 7, 12),
+        ("Phase 8: UAT — ssir/de cutover", 9, 10),
+        ("Phase 9: UAT — kr/jp cutover", 10, 11),
+        ("Phase 10: UAT — cn/us/emea cutover", 11, 12),
+        ("Phase 11: UAT — global cutover + hypercare", 12, 14),
     ]
 
-    colors = ["4A90D9", "2ECC71", ADOBE_GREEN, "27AE60", "E74C3C", "E67E22",
-              "9B59B6", "F39C12", "1ABC9C", "3498DB", "E91E63", ADOBE_RED]
+    colors = ["4A90D9", "2ECC71", ADOBE_GREEN, "27AE60", "E74C3C", "FF6600",
+              "9B59B6", "F39C12", "1ABC9C", "3498DB", "E91E63", "C0392B", "8E44AD", ADOBE_RED]
 
     for i, (phase, start, end) in enumerate(phases):
         ws_timeline.cell(row=row, column=2, value=phase).font = body_bold_font
         ws_timeline.cell(row=row, column=2).border = thin_border
-        for w in range(1, 29):
-            cell = ws_timeline.cell(row=row, column=w + 2)
+        for m in range(1, 15):
+            cell = ws_timeline.cell(row=row, column=m + 2)
             cell.border = thin_border
-            if start <= w <= end:
+            if start <= m <= end:
                 cell.fill = PatternFill(start_color=colors[i], end_color=colors[i], fill_type="solid")
         row += 1
 
     row += 2
-    ws_timeline.cell(row=row, column=2, value="Legend:").font = body_bold_font
+    ws_timeline.cell(row=row, column=2, value="Staged Regional Cutover Strategy (from Samsung analysis):").font = body_bold_font
     row += 1
-    ws_timeline.cell(row=row, column=2, value="Green bars = Block Library reuse phases (accelerated)").font = body_font
-    row += 1
-    ws_timeline.cell(row=row, column=2, value="Purple bar = DAM/Asset migration (extended due to 229GB volume)").font = body_font
-    row += 1
-    ws_timeline.cell(row=row, column=2, value="Semi-only timeline: ~20-22 weeks (remove LED phases)").font = body_font
-    row += 1
-    ws_timeline.cell(row=row, column=2, value="Combined timeline: ~24-28 weeks (reduced from 28-32)").font = body_font
+    ws_timeline.cell(row=row, column=2, value="ssir/de (small, low risk) → kr/jp → cn → us/emea → global (master, highest risk last)").font = body_font
 
     # Save
     output_path = "/backups/riteskum/lge-be-eds/repo/Samsung_EDS_Migration_Estimate.xlsx"
     wb.save(output_path)
-    print(f"Revised estimate saved to: {output_path}")
+    print(f"Revised v3.0 estimate saved to: {output_path}")
     return output_path
 
 
