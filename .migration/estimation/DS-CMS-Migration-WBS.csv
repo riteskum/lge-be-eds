@@ -1,0 +1,39 @@
+Phase,Work Item,Detail,Volume / Notes,Effort (person-days)
+Phase 0 - Discovery,Requirements & inventory audit,Content reconciliation, IA finalization, migration strategy,Both sites EN+KO,15
+Phase 0 - Discovery,Architecture design,On-prem to SaaS (To-be) blueprint,,5
+Phase 1 - Foundation,Repo & CI/CD,Scaffolding, environments, AEM Code Sync,,5
+Phase 1 - Foundation,Design system,Tokens, typography, color, spacing (extracted from source),,12
+Phase 1 - Foundation,Navigation / mega-menu,Multi-level header EN/KO,,12
+Phase 1 - Foundation,Footer,Global footer,,5
+Phase 1 - Foundation,Multilingual structure,EN/KO i18n + language switcher,,8
+Phase 1 - Foundation,Shared global blocks,Hero, cards, breadcrumbs, search bar,,10
+Phase 1 - Foundation,Metadata / SEO / redirects,Strategy & mapping,,3
+Phase 2 - Templates & Blocks,Home,High difficulty,1 page,8
+Phase 2 - Templates & Blocks,Product (landing + detail),Memory / S.LSI - High,266 / 66 / 129,15
+Phase 2 - Templates & Blocks,Applications,High difficulty,9,6
+Phase 2 - Templates & Blocks,Support templates,Home, article, tools-resources, quality,376,12
+Phase 2 - Templates & Blocks,Technologies + Foundry,Standard,16 / 34,6
+Phase 2 - Templates & Blocks,News/Events/Tech Blog,Low complexity templates,266/111/114/465,10
+Phase 2 - Templates & Blocks,ESG,Sustainability (redesign), Accessibility, EHS,62 / 2 / 28,10
+Phase 2 - Templates & Blocks,About Us,Redesign + SAS/SAIT/SSIR/SIRC,41/15/7/3/1,10
+Phase 2 - Templates & Blocks,Newsroom templates,Article template + tag/taxonomy template,2 templates,13
+Phase 3 - Integrations,S.LSI Parts PD - PIM,Dynamic product data integration,71 pages,15
+Phase 3 - Integrations,CVE / product-security-updates,Dynamic security feed,197 pages,15
+Phase 3 - Integrations,Site search,EN/KO,,10
+Phase 3 - Integrations,Forms / contact-info,Contact forms,6,5
+Phase 4 - Content Migration,Semiconductor import pipeline,Parsers/transformers per template,,20
+Phase 4 - Content Migration,Semiconductor import + QA,Automated import + per-page QA (~40 pg/day),~1688 EN+KO,45
+Phase 4 - Content Migration,Newsroom article pipeline,WordPress export/API mapping,,12
+Phase 4 - Content Migration,Newsroom article import + QA,Automated + per-page QA (~60 pg/day),~3250 articles,55
+Phase 4 - Content Migration,Newsroom tag/taxonomy,Generated via template + query index + spot QA,~7650 (NOT per-page),10
+Phase 5 - QA/Perf/A11y,Cross-browser/device QA,,,12
+Phase 5 - QA/Perf/A11y,Performance tuning,Lighthouse 100 target per template,,10
+Phase 5 - QA/Perf/A11y,Accessibility audit,WCAG 2.1 AA EN/KO,,10
+Phase 5 - QA/Perf/A11y,Link & redirect validation,,,3
+Phase 6 - UAT/Launch,UAT support & fixes,,,12
+Phase 6 - UAT/Launch,Go-live cutover,DNS, redirects, publishing,,8
+Phase 6 - UAT/Launch,Hypercare,2 weeks post-launch,,10
+Subtotal,Delivery subtotal,,,417
+Overhead,Project management & coordination,~15%,,63
+Overhead,Contingency / risk buffer,~10% (dynamic integrations, redesigns),,48
+TOTAL,TOTAL,,,528
